@@ -28,7 +28,7 @@ vars(2).values = 1.0;%0.5:0.25:1;
 vars(3) = VAR.TURBULENCE;
 vars(3).values = 0;
 
-% Airplane general technological parameters
+% Airplane general technological parameters first
 initParameters;
 parameters.bat.chrg_lim_type = 2;   % Enable charge limiting using experimental data
 

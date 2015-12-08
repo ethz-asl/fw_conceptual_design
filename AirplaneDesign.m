@@ -42,6 +42,11 @@ vars(2).values = 1:1:7;
 vars(3) = VAR.ASPECT_RATIO;
 vars(3).values = 18.5;
 
+% Airplane general technological parameters first
+initParameters;
+parameters.structure.corr_factor = 1.21;    % Structural mass correction factor. Set to 1.0 to use without correction.Chose 1.21 
+                                            % to correspond to AtlantikSolar initial structural mass calculation by D. Siebenmann. 
+
 % This is the default configuration for our design variables! 
 % (which is only used if we don't design over b, m_bat or AR)
 plane.struct.b = 5.6;
@@ -54,11 +59,6 @@ plane.avionics.mass = 0.6;
 plane.payload.power = 0;
 plane.payload.mass = 0.0;
 plane.prop.P_prop_max = 180.0;
-
-% Airplane general technological parameters
-initParameters;
-parameters.structure.corr_factor = 1.21;    % Structural mass correction factor. Set to 1.0 to use without correction.Chose 1.21 
-                                            % to correspond to AtlantikSolar initial structural mass calculation by D. Siebenmann. 
 
 % Set environment
 environment.dayofyear = round(5*30.5+21);
