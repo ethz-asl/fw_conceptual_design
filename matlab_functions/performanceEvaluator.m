@@ -109,7 +109,7 @@ while d_irr >= 0
     irr = irr_vec(1);
     d_irr = irr - irr_old;
     t = t+Dt;
-    if t >= 3600*15 % /!\ %TOCHECK check whether 15 is enough in all cases even at weird longitudes and DSTs
+    if t >= 3600*15
         flags.max_solarpower_reached = 0; % the maximum solar power point was never reached
         results.t_max = NaN;
         break; % abort the search
@@ -136,6 +136,7 @@ end
 %Step 1g: Find t_eq2, that means the time when P_Solar=P_electot again
 %        and thus the discharge would have to start if flying at h_0
 if(flags.eq_reached)
+    t = results.t_max;
     while P_solar >= P_elec_tot
         irr_vec = solar_radiation_on_surface2(0,0,mod(t+environment.add_solar_timeshift,86400),(environment.dayofyear+floor(t/86400)),...
                     environment.lat,0, h,environment.albedo);
@@ -172,8 +173,8 @@ end
 % Determine earliest start time when starting with full batt (step backward in time)
 while E_bat < E_bat_max
     t = t - Dt;
-    if t<0;
-        irr = 0; % set zero light before midnight
+    if t < results.t_sunrise;
+        irr = 0; % set zero light before sunrise
     else
         irr_vec = solar_radiation_on_surface2(0,0,mod(t+environment.add_solar_timeshift,86400),(environment.dayofyear+floor(t/86400)),...
             environment.lat,0, h,environment.albedo);
@@ -209,7 +210,9 @@ if(~isnan(t_eq)) t_sim_end = t_sim_end + t_eq; end
 % Note: Important to have multiple of days + t_eq here! Sim needs to
 % stop at X-days + t_eq, otherwise t_excess calculation could be wrong!
 
+turb_before = environment.turbulence;
 while E_bat >=0 && h>=environment.h_0 && t<=t_sim_end
+    tOfDay = mod(t + environment.add_solar_timeshift,86400);
 
     %--------------------------------------------
     % STEP 3a: Recalculate current flight conditions
@@ -222,30 +225,37 @@ while E_bat >=0 && h>=environment.h_0 && t<=t_sim_end
     end
 
     % Pre-calculate potential level-power increase due to atmospheric turbulence
-    curr_turb = environment.turbulence;
-    if(mod(t,86400) > t_eq+1*3600 && mod(t,86400) < t_eq2-1*3600) %Heuristics only
-        curr_turb = curr_turb + environment.turbulence_day; 
+    turb = environment.turbulence;
+    if(tOfDay > t_eq+1*3600 && tOfDay < t_eq2-1*3600) %Heuristics only
+        turb = turb + environment.turbulence_day; 
     end
-
+    
     %Step1b: Calc Total electric power for level flight
-    if(exist('plane', 'var') && isfield(plane, 'ExpPerf') && isfield(plane.ExpPerf, 'P_prop_level'))
-        P_elec_level = plane.ExpPerf.P_prop_level * sqrt(plane.ExpPerf.rho_P_prop_level/rho) * (1.0 + curr_turb);
-    else
-        P_elec_level = CalcPFromPolars(plane, parameters, rho, mu) * (1.0 + curr_turb);
+    if(turb ~= turb_before || h ~=h_before) 
+        if(exist('plane', 'var') && isfield(plane, 'ExpPerf') && isfield(plane.ExpPerf, 'P_prop_level'))
+            P_elec_level = plane.ExpPerf.P_prop_level * sqrt(plane.ExpPerf.rho_P_prop_level/rho) * (1.0 + turb);
+        else
+            P_elec_level = CalcPFromPolars(plane, parameters, rho, mu) * (1.0 + turb);
+        end
+        P_elec_tot = P_elec_level + plane.avionics.power + plane.payload.power;
     end
-    P_elec_tot = P_elec_level + plane.avionics.power + plane.payload.power;
-
+    turb_before = turb;
+    
     % Recalculate parameters for optimal/higher-speed cruise (not
     % implemented anymore)
     %if(parameters.optGRcruise==1 && AC_STATE==ACS.MAXALTREACHED)
     %    OptCruisePars=PreparePars_OptCruise(m_wo_bat+bat.m,rho,mu,A_wing,A_wing/b,g,polar);
     %end
 
-    irr_vec = solar_radiation_on_surface2(0,0,mod(t+environment.add_solar_timeshift,86400),(environment.dayofyear+floor(t/86400)),...
-            environment.lat,0, h,environment.albedo);
-    irr = irr_vec(1);
-    P_solar = environment.clearness * irr * plane.ExpPerf.solar.surface * eta_solar;
-
+    if(tOfDay<results.t_sunrise || tOfDay>results.t_sunset)
+        P_solar = 0;
+    else
+        irr_vec = solar_radiation_on_surface2(0,0,mod(t+environment.add_solar_timeshift,86400),(environment.dayofyear+floor(t/86400)),...
+                environment.lat,0, h,environment.albedo);
+        irr = irr_vec(1);
+        P_solar = environment.clearness * irr * plane.ExpPerf.solar.surface * eta_solar;
+    end
+    
     % -------------------------------------------------------------------
     % STEP 3b: CONTROL LAW. P_prop is the only control input.
     % -------------------------------------------------------------------
@@ -390,7 +400,8 @@ end
 % DEBUG OUTPUTS ONLY
 %---------------------------------------------------------------------
 if(settings.DEBUG==1)
-    Plot_BasicSimulationTimePlot(flightdata,environment,parameters, plane);
+    %Plot_BasicSimulationTimePlot(flightdata,environment,parameters, plane);
+    Plot_BasicSimulationTimePlot_ASJFR81hFlightPaper(flightdata,environment,parameters, plane);
 end
 
 if(settings.DEBUG==1)

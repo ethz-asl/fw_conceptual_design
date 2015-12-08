@@ -9,16 +9,15 @@ function [ P_bat_limited ] = ChargeLimiter(SoC_current, P_bat, parameters, plane
         % Max admissible charging power in [W] at any SoC
         P_bat_max_overall = parameters.bat.chrg_lim_Prel1 * parameters.bat.e_density * plane.bat.m /3600;
         
-        % Use an exponentially-decreasing (exp(-c*x)) fct., where P_bat_limited=Prel2*P_max 
-        % at SoC2(=1.0). Find the constant first        
-        c =-log(parameters.bat.chrg_lim_Prel2);
-        
         if(SoC_current < parameters.bat.chrg_lim_SoC1)
             P_bat_limited = P_bat;
             if(P_bat_limited > P_bat_max_overall) P_bat_limited = P_bat_max_overall; end
         elseif(SoC_current >= 1.0)
             P_bat_limited = 0;
         else
+            % Use exp.-decreasing (exp(-c*x)) fct., where P_bat_limited=Prel2*P_max at SoC2(=1.0). Find the constant first
+            c =-log(parameters.bat.chrg_lim_Prel2);
+
             P_bat_limited = exp (-c*(SoC_current-parameters.bat.chrg_lim_SoC1)/(1.0-parameters.bat.chrg_lim_SoC1))*P_bat_max_overall;
             if(P_bat < P_bat_limited)
                 P_bat_limited = P_bat;

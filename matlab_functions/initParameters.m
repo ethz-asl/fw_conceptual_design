@@ -27,7 +27,7 @@ params.bat.eta_dchrg       = 0.95;     % Eff. of discharge process [-]
 params.bat.eta_bec         = 0.65;     % Eff. of bec (5V stepdown) [-]
 params.bat.e_density       = 243*3600; % Energy density of battery including battery-cables sensors etc.
 params.bat.distr           = 1;        % Distributed battery mass? 1/0
-params.bat.chrg_lim_type   = 1;        % 0 = Don't use, 1=use experim. charge limit curve, 2 = use params below 
+params.bat.chrg_lim_type   = 1;        % 0 = Don't use, 1=use theor. params below, 2 = use experimental charge limit curve
 params.bat.chrg_lim_SoC1   = 0.9;      % SoC [-] above which charge limiting applies
 params.bat.chrg_lim_Prel1  = 0.5;      % Maximum charge relative to battery capacity (i.e. in C's) when NOT limiting (i.e. below SoC1)
 params.bat.chrg_lim_Prel2  = 0.02;     % Specific charge termination power, i.e. P_chrg(SoC=100%) = chrg_lim_Prel2 * e_bat

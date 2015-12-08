@@ -25,7 +25,6 @@ A  = c*b;
 
 N  = ceil(b/(0.3*c*2))*2;  % discretization aligned w/ribs
 
-m_propulsion_old = 0.2; %[kg] propulsion mass
 if(ismars~=1)  
     g=9.806;
     rho=1.225;
