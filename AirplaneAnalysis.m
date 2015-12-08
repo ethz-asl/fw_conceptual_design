@@ -22,9 +22,9 @@ addpath(genpath('matlab_functions'))
 % in the file Var.m). If you only want to specify one or two variables, simply 
 % provide a constant value for the remaining (i.e. the second/third) one
 vars(1) = VAR.DAY_OF_YEAR;
-vars(1).values = round(5*30.5+25):5:round(6*30.5+26);
+vars(1).values = round(5*30.5+21);%:5:round(6*30.5+26);
 vars(2) = VAR.CLEARNESS;
-vars(2).values = 0.5:0.25:1;
+vars(2).values = 1.0;%0.5:0.25:1;
 vars(3) = VAR.TURBULENCE;
 vars(3).values = 0;
 
@@ -43,18 +43,18 @@ plane.ExpPerf.solar.surface = 88 * (0.125^2 - 4*35.28E-6);
 plane.ExpPerf.P_prop_level = 37;          %
 plane.ExpPerf.rho_P_prop_level = 1.095;     % Density at which power curve of aircraft was recorded
 plane.avionics.power = 5.5;
-plane.payload.power = 3;
+plane.payload.power = 0;
 plane.prop.P_prop_max = 180.0;
     
 %These are the environment parameters
 environment.dayofyear = round(5*30.5+21);
-environment.lat = 47.6;                     % 
+environment.lat = 47.6;                     % Rafz
 environment.lon = 8.5;
 environment.h_0 = 416+120;                  % with 120m AGL flight altitude for enough safety
-environment.h_max = 2000;                   %
-environment.T_ground = 35+271.15;
+environment.h_max = 700;                   %
+environment.T_ground = 28+271.15;
 environment.turbulence = 0;
-environment.turbulence_day = 0.4;           % Relative increase of power consumption during the day, e.g. due to thermals
+environment.turbulence_day = 0.0;           % Relative increase of power consumption during the day, e.g. due to thermals
 environment.clearness = 1.0;
 environment.albedo = 0.12;
 environment.add_solar_timeshift = -3600;    % [s], due to Daylight Saving Time (DST)

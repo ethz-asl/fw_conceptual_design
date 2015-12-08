@@ -35,12 +35,12 @@ addpath(genpath('matlab_functions'))
 % vars(1)= VAR.WING_SPAN;
 % vars(1).values = 3:1:5; %Analyse over wing spans from 3 to 5m in 1m steps
 
-vars(1) = VAR.BATTERY_MASS;
-vars(1).values = 4:0.5:5;
-vars(2) = VAR.WING_SPAN;
-vars(2).values = 4:0.5:6;
+vars(1) = VAR.WING_SPAN;
+vars(1).values = 3.5:1:6.5;
+vars(2) = VAR.BATTERY_MASS;
+vars(2).values = 1:1:7;
 vars(3) = VAR.ASPECT_RATIO;
-vars(3).values = 5:13:18;
+vars(3).values = 18.5;
 
 % This is the default configuration for our design variables! 
 % (which is only used if we don't design over b, m_bat or AR)
@@ -51,22 +51,24 @@ plane.bat.m = 3.0;
 %This is the other plane-specific data. 
 plane.avionics.power = 5.5;
 plane.avionics.mass = 0.6;
-plane.payload.power = 3;
-plane.payload.mass = 0.2;
+plane.payload.power = 0;
+plane.payload.mass = 0.0;
 plane.prop.P_prop_max = 180.0;
 
 % Airplane general technological parameters
 initParameters;
+parameters.structure.corr_factor = 1.21;    % Structural mass correction factor. Set to 1.0 to use without correction.Chose 1.21 
+                                            % to correspond to AtlantikSolar initial structural mass calculation by D. Siebenmann. 
 
 % Set environment
 environment.dayofyear = round(5*30.5+21);
 environment.lat = 47.6;                     % 1: Barcelona 2:Tuggen/CH
 environment.lon = 8.5;
 environment.h_0 = 416+120;                  % with 120m AGL flight altitude for enough safety
-environment.h_max = 2000;                   % Barcelona: 4000ft
-environment.T_ground = 35+271.15;
+environment.h_max = 800;                   % Barcelona: 4000ft
+environment.T_ground = 25+271.15;
 environment.turbulence = 0;
-environment.turbulence_day = 0.4;           % Relative increase of power consumption during the day, e.g. due to thermals
+environment.turbulence_day = 0.0;           % Relative increase of power consumption during the day, e.g. due to thermals
 environment.clearness = 1.0;
 environment.albedo = 0.12;
 environment.add_solar_timeshift = -3600;    % [s], due to Daylight Saving Time (DST)
@@ -76,7 +78,7 @@ settings.DEBUG = 0;                         % Force DEBUG mode
 settings.dt = 200;                          % Discretization time interval [s]
 settings.climbAllowed = 0;
 settings.SimType = 0;                       % 0 = Start on t_eq, 1 = start on specified Initial Conditions
-settings.SimTimeDays = 1;                   % Simulation Time in days (e.g. 1 = std. 24h simulation)
+settings.SimTimeDays = 2;                   % Simulation Time in days (e.g. 1 = std. 24h simulation)
 settings.InitCond.SoC = 0.46;               % State-of-charge [-]
 settings.InitCond.t = 9.0*3600 + 32*60;     % [s]launch time
 settings.evaluation.findalt = 0;            % if 1, it finds the maximum altitude for eternal flight
@@ -129,4 +131,5 @@ close(h)
 % folder. Please modify and call these scripts if you want to modify the 
 % plots
 
-Plot_AirplaneDesign_Standard(PerfResults, DesignResults, environment, plane, params, flightdata, vars);
+%Plot_AirplaneDesign_Standard(PerfResults, DesignResults, environment, plane, params, flightdata, vars);
+Plot_AirplaneDesign_ASFinalPaper(PerfResults, DesignResults, environment, plane, params, flightdata, vars);
