@@ -3,17 +3,15 @@
 % 12/2009
 %
 % Inputs: 
-%    b:        [m]  wing span
-%    AR:       [-]  aspect ratio
-%    m_pld:    [kg] point mass
-%    m_distr:  [kg] distributed mass (e.g. battery)
-%    n:        [-]  number of distributed propulsion units
+%    b:                     [m]  wing span
+%    AR:                    [-]  aspect ratio
+%    m_pld:                 [kg] point mass
+%    m_distr:               [kg] distributed mass (e.g. battery)
+%    n:                     [-]  number of distributed propulsion units
+%    correction_factor:     [-] A "training" factor/multiplier for the structure weights weights and is used to adapt the result to experimental
 % =========================================================================
-function [m_struct,masses,thicknesses,velocities,polar]=StructureDesigner(b,AR,m_pld,m_distr,n,ismars)
-mult = 0.95; %set to meet Siebenmanns calculations for 5.4m/AR19.6/mbat4kg plane with
-%an additional 20% margin(meeting of 20120607). However, this calculation
-%assumed a rib-Structure!!
-
+function [m_struct,masses,thicknesses,velocities,polar]=StructureDesigner(b,AR,m_pld,m_distr,n,ismars,correction_factor)
+             
 N  = 24;  % discretization
 n_propulsion = 0.6; %propulsion group overall efficiency
 if n==0 % e.g. Human Powered, no propulsion applied
@@ -637,19 +635,19 @@ while rel_delta_m>0.001
     %% recalculate mass distribution
     damping=0.8;
     % wing mass distr
-    wing_m_distr =damping*wing_m_distr + (1-damping)*mult*(1.2*ones(size(y,2),1)*delta*(...
+    wing_m_distr =damping*wing_m_distr + (1-damping)*correction_factor*(1.2*ones(size(y,2),1)*delta*(...
         rho_mat(mat_s_wing)*t_s_wing*s0*c+rho_mat(5)*t_sw_wing*s0*c...
         +2*b_f*c*t_f_wing*rho_mat(1)...
         +h_prof*t_sp_wing*rho_mat(1) + h_prof*t_spsw_wing*rho_mat(5)));
-    fin_m =damping*fin_m + (1-damping)*mult*(1.2*b_fin*(...
+    fin_m =damping*fin_m + (1-damping)*correction_factor*(1.2*b_fin*(...
         rho_mat(mat_s_fin)*t_s_fin*s0_tail*c_fin+rho_mat(5)*t_sw_fin*s0_tail*c_fin...
         +2*b_f*c_fin*t_f_fin*rho_mat(1)...
         +h_prof_fin*t_sp_fin*rho_mat(1) + h_prof_fin*t_spsw_fin*rho_mat(5)));
-    hor_m =damping*hor_m + (1-damping)*mult*(1.2*b_hor*(...
+    hor_m =damping*hor_m + (1-damping)*correction_factor*(1.2*b_hor*(...
         rho_mat(mat_s_hor)*t_s_hor*s0_tail*c_hor+rho_mat(5)*t_sw_hor*s0_tail*c_hor...
         +2*b_f*c_hor*t_f_fin*rho_mat(1)...
         +h_prof_hor*t_sp_hor*rho_mat(1) + h_prof_hor*t_spsw_hor*rho_mat(5)));
-    fus_m=damping*fus_m + (1-damping)*mult*(1.2*L*D*pi*t_fus*rho_mat(2));
+    fus_m=damping*fus_m + (1-damping)*correction_factor*(1.2*L*D*pi*t_fus*rho_mat(2));
     m_struct_new=fus_m+hor_m+fin_m+2*sum(wing_m_distr);
     m_tot_new=m_struct+m_distr+m_pld+m_propulsion;
     rel_delta_m=abs(1-m_struct_new/m_struct);

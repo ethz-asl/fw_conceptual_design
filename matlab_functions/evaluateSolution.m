@@ -36,10 +36,10 @@ DesignResults.m_distr = DesignResults.m_solar + plane.bat.m * parameters.bat.dis
 % ========================================================
 if(parameters.structure.shell==1)
     [DesignResults.m_struct,masses,thicknesses,velocities,plane.polar]=StructureDesigner(plane.struct.b,...
-        plane.struct.AR, DesignResults.m_central,DesignResults.m_distr,parameters.propulsion.number,environment.usemars);
+        plane.struct.AR, DesignResults.m_central,DesignResults.m_distr,parameters.propulsion.number,environment.usemars,parameters.structure.corr_fact);
 else
     [DesignResults.m_struct,masses,thicknesses,velocities,plane.polar]=StructureDesignerRibWing(plane.struct.b,...
-        plane.struct.AR, DesignResults.m_central,DesignResults.m_distr,parameters.prop.number,environment.usemars);
+        plane.struct.AR, DesignResults.m_central,DesignResults.m_distr,parameters.prop.number,environment.usemars,parameters.structure.corr_fact);
 end
 %Save structural masses to DesignResults (array) for later use
 DesignResults.m_prop = masses.m_prop;

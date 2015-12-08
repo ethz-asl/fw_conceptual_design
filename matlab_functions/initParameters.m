@@ -44,6 +44,8 @@ params.solar.k_temp         = 0.003;    % Solar power (and thus eta) reduction i
 
 %==== Structure ===========================================================
 params.structure.shell      = 0;        % 1 for shell wing, 0 for rib wing
+params.structure.corr_fact  = 1.0;      % Correction factor that can be used to correct the structural mass estimation
+                                        % results if an experimental data point (i.e. a finished structure) is available.
 
 %--------------------------------------------------------------------------
 
