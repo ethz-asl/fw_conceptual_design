@@ -8,7 +8,7 @@
 % *************************************************************************
 
 function [PerfResults,DesignResults,flightdata] ...
- = evaluateSolution(plane,environment,parameters,settings)
+ = evaluateSolution(plane,environment,params,settings)
 
 % Input processing
 % ================
@@ -17,29 +17,29 @@ function [PerfResults,DesignResults,flightdata] ...
 % ========================================
 
 % Solar module
-DesignResults.m_solar = plane.struct.b^2/plane.struct.AR*parameters.solar.rWngCvrg*...
-    (parameters.solar.k_sc+parameters.solar.k_enc);
+DesignResults.m_solar = plane.struct.b^2/plane.struct.AR*params.solar.rWngCvrg*...
+    (params.solar.k_sc+params.solar.k_enc);
 
 % MPPT
 I_max = 1000; %[W/m^2]
-DesignResults.m_mppt = parameters.solar.k_mppt*I_max*plane.struct.b^2/plane.struct.AR ...
-	*parameters.solar.eta_sc*parameters.solar.eta_cbr;
+DesignResults.m_mppt = params.solar.k_mppt*I_max*plane.struct.b^2/plane.struct.AR ...
+	*params.solar.eta_sc*params.solar.eta_cbr;
 
 % total point mass
 DesignResults.m_central = DesignResults.m_mppt + plane.payload.mass+plane.avionics.mass...
-    +(1-parameters.bat.distr)*plane.bat.m;
+    +(1-params.bat.distr)*plane.bat.m;
 
 % total distributed mass
-DesignResults.m_distr = DesignResults.m_solar + plane.bat.m * parameters.bat.distr;
+DesignResults.m_distr = DesignResults.m_solar + plane.bat.m * params.bat.distr;
 
 % Automatic Preliminary Design (S. Leutenegger / M. Jabas)
 % ========================================================
-if(parameters.structure.shell==1)
+if(params.structure.shell==1)
     [DesignResults.m_struct,masses,thicknesses,velocities,plane.polar]=StructureDesigner(plane.struct.b,...
-        plane.struct.AR, DesignResults.m_central,DesignResults.m_distr,parameters.propulsion.number,environment.usemars,parameters.structure.corr_fact);
+        plane.struct.AR, DesignResults.m_central,DesignResults.m_distr,params.propulsion.number,environment.usemars,params.structure.corr_fact);
 else
     [DesignResults.m_struct,masses,thicknesses,velocities,plane.polar]=StructureDesignerRibWing(plane.struct.b,...
-        plane.struct.AR, DesignResults.m_central,DesignResults.m_distr,parameters.prop.number,environment.usemars,parameters.structure.corr_fact);
+        plane.struct.AR, DesignResults.m_central,DesignResults.m_distr,params.prop.number,environment.usemars,params.structure.corr_fact);
 end
 %Save structural masses to DesignResults (array) for later use
 DesignResults.m_prop = masses.m_prop;
@@ -55,7 +55,7 @@ plane.m_no_bat = DesignResults.m_no_bat;
 % excess time, if continuous flight is possible
 
 if (settings.evaluation.findalt~=1)
-        [PerfResults,flightdata] = performanceEvaluator(parameters, plane, environment, settings);
+        [PerfResults,flightdata] = performanceEvaluator(params, plane, environment, settings);
 elseif (settings.evaluation.findalt == 1)   
     PerfResults.t_excess=0;
     hL = 0; %min
@@ -65,7 +65,7 @@ elseif (settings.evaluation.findalt == 1)
      
     for i = 1:numel(h)
         environment.h_0 = h(i);
-        [PerfResults, flightdata] = performanceEvaluator(parameters, plane, environment, settings);
+        [PerfResults, flightdata] = performanceEvaluator(params, plane, environment, settings);
         if (isnan(PerfResults.t_excess) || PerfResults.t_excess<=0)
             break;
         else

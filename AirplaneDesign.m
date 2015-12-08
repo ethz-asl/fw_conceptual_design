@@ -44,8 +44,8 @@ vars(3).values = 18.5;
 
 % Airplane general technological parameters first
 initParameters;
-parameters.structure.corr_factor = 1.21;    % Structural mass correction factor. Set to 1.0 to use without correction.Chose 1.21 
-                                            % to correspond to AtlantikSolar initial structural mass calculation by D. Siebenmann. 
+params.structure.corr_fact = 1.21;    % Structural mass correction factor. Set to 1.0 to use without correction.Chose 1.21 
+                                      % to correspond to AtlantikSolar initial structural mass calculation by D. Siebenmann. 
 
 % This is the default configuration for our design variables! 
 % (which is only used if we don't design over b, m_bat or AR)

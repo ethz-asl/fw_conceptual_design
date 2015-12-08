@@ -12,7 +12,7 @@
 % *************************************************************************
 % Input Arguments:
 % ****************
-% parameters    technological parameters
+% params        technological parameters
 % plane         airplane characteristics  
 % environment:  environmental conditions 
 %   .lat        latitude [deg]
@@ -24,7 +24,7 @@
 % settings      simulation settings
 % *************************************************************************
 
-function [results, flightdata] = performanceEvaluator( parameters, plane, environment, settings)
+function [results, flightdata] = performanceEvaluator( params, plane, environment, settings)
 
 % set the time discretization:
 Dt = settings.dt; %[s]
@@ -71,13 +71,13 @@ P_solar = 0;
 irr = 0;
 
 %STEP 1a: Simple pre-calculations
-E_bat_max = parameters.bat.e_density * plane.bat.m; % maximum battery energy state
+E_bat_max = params.bat.e_density * plane.bat.m; % maximum battery energy state
 
-c_temp = 1.0 - parameters.solar.k_temp*(environment.T_ground - (273.15 + 25));
-eta_solar = parameters.solar.eta_sc * c_temp * parameters.solar.eta_cbr * parameters.solar.eta_mppt;
+c_temp = 1.0 - params.solar.k_temp*(environment.T_ground - (273.15 + 25));
+eta_solar = params.solar.eta_sc * c_temp * params.solar.eta_cbr * params.solar.eta_mppt;
 
 if(~(exist('plane', 'var') && isfield(plane, 'ExpPerf') && isfield(plane.ExpPerf, 'solar') && isfield(plane.ExpPerf.solar, 'surface'))) 
-    plane.ExpPerf.solar.surface = plane.struct.b^2/plane.struct.AR*parameters.solar.rWngCvrg;
+    plane.ExpPerf.solar.surface = plane.struct.b^2/plane.struct.AR*params.solar.rWngCvrg;
 end
 
 %STEP 1b: Calculate air properties
@@ -87,7 +87,7 @@ end
 if(exist('plane', 'var') && isfield(plane, 'ExpPerf') && isfield(plane.ExpPerf, 'P_prop_level'))
     P_elec_level = plane.ExpPerf.P_prop_level * sqrt(plane.ExpPerf.rho_P_prop_level/rho) * (1.0+environment.turbulence);
 else
-    P_elec_level = CalcPFromPolars(plane, parameters, rho, mu) * (1.0+environment.turbulence);
+    P_elec_level = CalcPFromPolars(plane, params, rho, mu) * (1.0+environment.turbulence);
 end
 P_elec_tot = P_elec_level + plane.avionics.power + plane.payload.power;
 
@@ -181,7 +181,7 @@ while E_bat < E_bat_max
         irr = irr_vec(1);
     end
     P_solar = environment.clearness * irr * plane.ExpPerf.solar.surface * eta_solar;
-    E_bat = E_bat + Dt * (P_elec_tot-P_solar) / parameters.bat.eta_dchrg;
+    E_bat = E_bat + Dt * (P_elec_tot-P_solar) / params.bat.eta_dchrg;
 end
 t_start_full = t;
     
@@ -235,7 +235,7 @@ while E_bat >=0 && h>=environment.h_0 && t<=t_sim_end
         if(exist('plane', 'var') && isfield(plane, 'ExpPerf') && isfield(plane.ExpPerf, 'P_prop_level'))
             P_elec_level = plane.ExpPerf.P_prop_level * sqrt(plane.ExpPerf.rho_P_prop_level/rho) * (1.0 + turb);
         else
-            P_elec_level = CalcPFromPolars(plane, parameters, rho, mu) * (1.0 + turb);
+            P_elec_level = CalcPFromPolars(plane, params, rho, mu) * (1.0 + turb);
         end
         P_elec_tot = P_elec_level + plane.avionics.power + plane.payload.power;
     end
@@ -243,7 +243,7 @@ while E_bat >=0 && h>=environment.h_0 && t<=t_sim_end
     
     % Recalculate parameters for optimal/higher-speed cruise (not
     % implemented anymore)
-    %if(parameters.optGRcruise==1 && AC_STATE==ACS.MAXALTREACHED)
+    %if(params.optGRcruise==1 && AC_STATE==ACS.MAXALTREACHED)
     %    OptCruisePars=PreparePars_OptCruise(m_wo_bat+bat.m,rho,mu,A_wing,A_wing/b,g,polar);
     %end
 
@@ -275,7 +275,7 @@ while E_bat >=0 && h>=environment.h_0 && t<=t_sim_end
                         %Standard control: Only give level power
                         P_prop = P_elec_level;
 %                             %Not implemented anymore                            
-%                             if(parameters.optGRcruise==1) 
+%                             if(params.optGRcruise==1) 
 %                                 [vtmp,Retmp,CLtmp,CDtmp]=CalcFlightPars_OptCruise((P_solar-P_0)*n_propulsion,P_level,m_wo_bat+bat.m,rho,mu,A_wing,A_wing/b,g,polar,OptCruisePars);
 %                                 if(isnan(Retmp)==0) %because CalcFlightPars can fail when P_prop->P_level due to inaccuracies in the interpolation 
 %                                     v=vtmp;Re=Retmp;CL=CLtmp;CD=CDtmp;
@@ -310,12 +310,12 @@ while E_bat >=0 && h>=environment.h_0 && t<=t_sim_end
     % dh/dt : Sink, Climb, or level?
     if(abs(P_prop-P_elec_level)/P_elec_level > 10*eps)
         % When climbing, efficieny may be different than when sinking
-        if(P_prop>P_elec_level) etaclimb = parameters.prop.eta_climb;
+        if(P_prop>P_elec_level) etaclimb = params.prop.eta_climb;
         elseif(P_prop<P_elec_level) etaclimb = 1.0;
         end
 
         P_prop = min(P_prop, plane.prop.P_prop_max); %Artificially limit climbing power
-        h = h + Dt*etaclimb*settings.climbAllowed*(P_prop-P_elec_level)/((plane.m_no_bat+plane.bat.m)*parameters.physics.g);
+        h = h + Dt*etaclimb*settings.climbAllowed*(P_prop-P_elec_level)/((plane.m_no_bat+plane.bat.m)*params.physics.g);
     end    
     if (h<environment.h_0) h=environment.h_0;
     elseif(h>environment.h_max) h=environment.h_max;
@@ -324,9 +324,9 @@ while E_bat >=0 && h>=environment.h_0 && t<=t_sim_end
     % dE/dt: Charge or discharge?
     delta_E  = Dt * (P_solar - P_prop - plane.avionics.power - plane.payload.power);
     if delta_E>0
-        delta_E = ChargeLimiter(E_bat/E_bat_max, delta_E/Dt * parameters.bat.eta_chrg, parameters, plane)*Dt;
+        delta_E = ChargeLimiter(E_bat/E_bat_max, delta_E/Dt * params.bat.eta_chrg, params, plane)*Dt;
     else
-        delta_E = delta_E/parameters.bat.eta_dchrg;
+        delta_E = delta_E/params.bat.eta_dchrg;
     end
     E_bat = min(E_bat+delta_E, E_bat_max);
 
@@ -369,7 +369,7 @@ if flags.eq_reached == 1
         if(isempty(idx_lastteq)) 
             display('WARNING no t_eq for calculation of t_exc found'); 
         end
-        results.t_excess = flightdata.bat_array(idx_lastteq) * parameters.bat.eta_dchrg / P_elec_tot / 3600;
+        results.t_excess = flightdata.bat_array(idx_lastteq) * params.bat.eta_dchrg / P_elec_tot / 3600;
         results.min_SoC = flightdata.bat_array(idx_lastteq)/E_bat_max;
     end
     % Step 4.2: Charge margin
@@ -400,8 +400,8 @@ end
 % DEBUG OUTPUTS ONLY
 %---------------------------------------------------------------------
 if(settings.DEBUG==1)
-    %Plot_BasicSimulationTimePlot(flightdata,environment,parameters, plane);
-    Plot_BasicSimulationTimePlot_ASJFR81hFlightPaper(flightdata,environment,parameters, plane);
+    %Plot_BasicSimulationTimePlot(flightdata,environment,params, plane);
+    Plot_BasicSimulationTimePlot_ASJFR81hFlightPaper(flightdata,environment,params, plane);
 end
 
 if(settings.DEBUG==1)

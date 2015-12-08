@@ -1,4 +1,4 @@
-function [] = Plot_BasicSimulationTimePlot_ASJFR81hFlightPaper(flightdata,environment,parameters, plane)
+function [] = Plot_BasicSimulationTimePlot_ASJFR81hFlightPaper(flightdata,environment,params, plane)
 % Basic plot of flight data vs. time
 %   Plot_BasicSimulationTimePlot(...) plots the flightdata (altitude, batters
 %   state, all power input and output components) over time.

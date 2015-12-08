@@ -1,4 +1,4 @@
-function [] = Plot_BasicSimulationTimePlot(flightdata,environment,parameters, plane)
+function [] = Plot_BasicSimulationTimePlot(flightdata,environment,params, plane)
 % Basic plot of flight data vs. time
 %   Plot_BasicSimulationTimePlot(...) plots the flightdata (altitude, batters
 %   state, all power input and output components) over time.
@@ -21,7 +21,7 @@ function [] = Plot_BasicSimulationTimePlot(flightdata,environment,parameters, pl
 
     % Battery state
     subplot(3,1,2);
-    E_bat_max = plane.bat.m * parameters.bat.e_density;
+    E_bat_max = plane.bat.m * params.bat.e_density;
     [ax(end+1:end+2),~,~] = plotyy(time, flightdata.bat_array/E_bat_max, time, flightdata.bat_array/3600);
     ylabel('Battery Charge State');
     legend('Battery SoC[%]','Battery Energy [Wh]');

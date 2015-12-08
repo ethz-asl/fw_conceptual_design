@@ -17,10 +17,10 @@ payload.mass = 0.6;%0.2;%0.722;
 payload.power = 4;%1.7;%18.4;
 
 % Change some parameters
-parameters.propulsion.number  =  2;        % Number of propulsion units [-]
-parameters.structure.shell    =  0;        % 1 for shell wing, 0 for rib wing
-parameters.evaluation.clmb    =  0;        % 1 to allow altitude changes
-parameters.evaluation.findalt =  1;        % if 1, it finds the maximum
+params.propulsion.number  =  2;        % Number of propulsion units [-]
+params.structure.shell    =  0;        % 1 for shell wing, 0 for rib wing
+params.evaluation.clmb    =  0;        % 1 to allow altitude changes
+params.evaluation.findalt =  1;        % if 1, it finds the maximum
                                            % altitude for eternal flight
                                            
 x0=[13.964754649863533  21.309585271646178  21.238851828246155];
@@ -41,7 +41,7 @@ for (i=1:length(lat_array))
     [x,fval,exitflag,output] = ...
         fminsearch(@evaluateSolutionSearch,x0,options);
     [performance,polar,masses] ...
-        = evaluateSolution(x(1),x(2),x(3),payload,environment,parameters);
+        = evaluateSolution(x(1),x(2),x(3),payload,environment,params);
     b(i)=x(1);
     AR(i)=x(2);
     m_bat(i)=x(3);

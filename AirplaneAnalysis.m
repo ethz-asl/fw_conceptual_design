@@ -30,7 +30,7 @@ vars(3).values = 0;
 
 % Airplane general technological parameters first
 initParameters;
-parameters.bat.chrg_lim_type = 2;   % Enable charge limiting using experimental data
+params.bat.chrg_lim_type = 2;   % Enable charge limiting using experimental data
 
 %This is the plane-specific data
 plane.m_no_bat = 6.81-2.918;
