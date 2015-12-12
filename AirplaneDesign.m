@@ -36,9 +36,9 @@ addpath(genpath('matlab_functions'))
 % vars(1).values = 3:1:5; %Analyse over wing spans from 3 to 5m in 1m steps
 
 vars(1) = VAR.WING_SPAN;
-vars(1).values = 3.5:1:6.5;
+vars(1).values = 3.5:0.1:6.5;
 vars(2) = VAR.BATTERY_MASS;
-vars(2).values = 1:1:7;
+vars(2).values = 1:0.1:7;
 vars(3) = VAR.ASPECT_RATIO;
 vars(3).values = 18.5;
 

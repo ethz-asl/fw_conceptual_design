@@ -22,12 +22,11 @@ function Plot_AirplaneDesign_ASFinalPaper(PerfResults, DesignResults, environmen
                     temp_endurance(k,j) = PerfResults(i,k,j).t_endurance;
                     temp_m_total(k,j) = DesignResults(i,k,j).m_no_bat + DesignResults(i,k,j).m_bat;
                     if(isnan(temp_chargemargin(k,j))) temp_chargemargin(k,j) = 0.0; end %Remove NaNs to have smooth contour plotting below
-                    if(isnan(temp_endurance(k,j))) temp_endurance(k,j) = 0.0; end %Remove NaNs to have smooth contour plotting below
                 end
             end
 
             %NaN-check to avoid plotting errors below
-           % if(isnan(temp_chargemargin)==0) temp_chargemargin(:,:) = 0.0; end
+            if(sum(~isnan(temp_endurance))==0) temp_endurance(:,:) = 0.0; end
 
             t_req = 6.9;
             FontSize = 14;
@@ -106,7 +105,8 @@ function Plot_AirplaneDesign_ASFinalPaper(PerfResults, DesignResults, environmen
     for i = 1:numel(vars(3).values)
         for k = 1:numel(vars(2).values)
             for j = 1:numel(vars(1).values)
-                if(flightdata(i,k,j).b == 4.5 && flightdata(i,k,j).m_bat == 7.0)
+                if(abs(flightdata(i,k,j).b-6.1) <= eps(flightdata(i,k,j).b) && ...
+                   abs(flightdata(i,k,j).m_bat-1.7) <= eps(flightdata(i,k,j).m_bat))
                     Plot_BasicSimulationTimePlot(flightdata(i,k,j), environment, params, plane);
                 end
             end

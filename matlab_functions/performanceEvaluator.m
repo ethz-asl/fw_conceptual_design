@@ -174,13 +174,13 @@ end
 while E_bat < E_bat_max
     t = t - Dt;
     if t < results.t_sunrise;
-        irr = 0; % set zero light before sunrise
+        P_solar = 0; % set zero light before sunrise
     else
         irr_vec = solar_radiation_on_surface2(0,0,mod(t+environment.add_solar_timeshift,86400),(environment.dayofyear+floor(t/86400)),...
             environment.lat,0, h,environment.albedo);
         irr = irr_vec(1);
+        P_solar = environment.clearness * irr * plane.ExpPerf.solar.surface * eta_solar;
     end
-    P_solar = environment.clearness * irr * plane.ExpPerf.solar.surface * eta_solar;
     E_bat = E_bat + Dt * (P_elec_tot-P_solar) / params.bat.eta_dchrg;
 end
 t_start_full = t;
@@ -212,12 +212,12 @@ if(~isnan(t_eq)) t_sim_end = t_sim_end + t_eq; end
 
 turb_before = environment.turbulence;
 while E_bat >=0 && h>=environment.h_0 && t<=t_sim_end
-    tOfDay = mod(t + environment.add_solar_timeshift,86400);
-
     %--------------------------------------------
     % STEP 3a: Recalculate current flight conditions
     %--------------------------------------------
 
+    tmod = mod(t,86400);
+    
     % Altitude has changed, recalc Re,CL,CD,v,Plevel,Pelectot
     if(h ~= h_before) 
         h_before = h;
@@ -226,7 +226,7 @@ while E_bat >=0 && h>=environment.h_0 && t<=t_sim_end
 
     % Pre-calculate potential level-power increase due to atmospheric turbulence
     turb = environment.turbulence;
-    if(tOfDay > t_eq+1*3600 && tOfDay < t_eq2-1*3600) %Heuristics only
+    if(tmod > t_eq+2*3600 && tmod < t_eq2*3600) %Heuristics only
         turb = turb + environment.turbulence_day; 
     end
     
@@ -247,7 +247,7 @@ while E_bat >=0 && h>=environment.h_0 && t<=t_sim_end
     %    OptCruisePars=PreparePars_OptCruise(m_wo_bat+bat.m,rho,mu,A_wing,A_wing/b,g,polar);
     %end
 
-    if(tOfDay<results.t_sunrise || tOfDay>results.t_sunset)
+    if(tmod<results.t_sunrise || tmod>results.t_sunset)
         P_solar = 0;
     else
         irr_vec = solar_radiation_on_surface2(0,0,mod(t+environment.add_solar_timeshift,86400),(environment.dayofyear+floor(t/86400)),...
