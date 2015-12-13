@@ -21,7 +21,7 @@ addpath(genpath('matlab_functions'))
 % -------------------------------------------------------------------------
 % Set the three variables to choose as design variables here. Choices are the
 % labels defined in the file VAR.m (i.e. VAR.WING_SPAN, VAR.BATTERY_MASS,
-% VAR.ASPECT_RATIO, VAR.CLEARNESS and VAR.TURBULENCE). 
+% VAR.ASPECT_RATIO, VAR.CLEARNESS and VAR.TURBULENCE, VAR.DAY_OF_YEAR, VAR.LATITUDE). 
 %
 % There is basically two design ways:
 % 1. Specify wing span, battery mass and aspect ratio ranges to design your 
@@ -35,10 +35,10 @@ addpath(genpath('matlab_functions'))
 % vars(1)= VAR.WING_SPAN;
 % vars(1).values = 3:1:5; %Analyse over wing spans from 3 to 5m in 1m steps
 
-vars(1) = VAR.WING_SPAN;
-vars(1).values = 3.5:0.1:6.5;
-vars(2) = VAR.BATTERY_MASS;
-vars(2).values = 1:0.1:7;
+vars(1) = VAR.DAY_OF_YEAR; %VAR.BATTERY_MASS;
+vars(1).values = floor(0*30.5):5:floor(11*30.5+29); %2.7:0.1:3.0;
+vars(2) = VAR.LATITUDE; %VAR.WING_SPAN;
+vars(2).values = 0:2.5:70; %5.4:0.1:5.8;
 vars(3) = VAR.ASPECT_RATIO;
 vars(3).values = 18.5;
 
@@ -51,7 +51,7 @@ params.structure.corr_fact = 1.21;    % Structural mass correction factor. Set t
 % (which is only used if we don't design over b, m_bat or AR)
 plane.struct.b = 5.6;
 plane.struct.AR = 18.5;
-plane.bat.m = 3.0;
+plane.bat.m = 2.9;
 
 %This is the other plane-specific data. 
 plane.avionics.power = 5.5;
@@ -113,6 +113,10 @@ for i = 1:numel(vars(3).values)
             if ~isempty(idx) ; environment.clearness = varval(idx); end
             idx = find(vars == VAR.TURBULENCE,1,'first');
             if ~isempty(idx) ; environment.turbulence = varval(idx); end
+            idx = find(vars == VAR.DAY_OF_YEAR,1,'first');
+            if ~isempty(idx) ; environment.dayofyear = varval(idx); end
+            idx = find(vars == VAR.LATITUDE,1,'first');
+            if ~isempty(idx) ; environment.lat = varval(idx); end
             
             [PerfResults(i,k,j),DesignResults(i,k,j),flightdata(i,k,j)] = ...
                evaluateSolution(plane,environment,params,settings);
@@ -131,5 +135,5 @@ close(h)
 % folder. Please modify and call these scripts if you want to modify the 
 % plots
 
-%Plot_AirplaneDesign_Standard(PerfResults, DesignResults, environment, plane, params, flightdata, vars);
-Plot_AirplaneDesign_ASFinalPaper(PerfResults, DesignResults, environment, plane, params, flightdata, vars);
+Plot_AirplaneDesign_Standard(PerfResults, DesignResults, environment, plane, params, flightdata, vars);
+%Plot_AirplaneDesign_ASFinalPaper(PerfResults, DesignResults, environment, plane, params, flightdata, vars);
