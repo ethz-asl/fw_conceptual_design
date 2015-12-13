@@ -56,6 +56,8 @@ results.t_sunrise = NaN;
 results.t_max = NaN;
 results.t_sunset = NaN;
 
+flags.sunrise_reached = 1;
+flags.sunset_reached = 1;
 flags.eq_reached = 1;                   % Flag: Power eq. reached or not
 flags.max_solarpower_reached = 1;
 flags.full_charge_reached = 1;
@@ -96,25 +98,40 @@ while irr <= 0
     irr_vec = solar_radiation_on_surface2(0,0,mod(t+environment.add_solar_timeshift,86400),(environment.dayofyear+floor(t/86400)),...
                 environment.lat,0, h,environment.albedo);
     irr = irr_vec(1);
+    if (t==0 && irr>0) %Special case 1: Sun does not set during night
+        flags.sunset_reached = 0;
+        flags.sunrise_reached = 0;
+        results.t_sunrise=0;
+        break;
+    elseif (t >= 3600*24) %Special case 2: Sun does not rise a all
+        flags.sunrise_reached = 0;
+        results.t_sunrise = 0;
+        break;
+    end
+    results.t_sunrise = t;
     t = t+Dt;
 end
-results.t_sunrise = t;
+
 
 %Step 1e: Find t_max, i.e. t(P_solar = P_solar_max)
-d_irr = 0;
-while d_irr >= 0
-    irr_old = irr;
-    irr_vec = solar_radiation_on_surface2(0,0,mod(t+environment.add_solar_timeshift,86400),(environment.dayofyear+floor(t/86400)),...
-                environment.lat,0, h,environment.albedo);
-    irr = irr_vec(1);
-    d_irr = irr - irr_old;
-    t = t+Dt;
-    if t >= 3600*15
-        flags.max_solarpower_reached = 0; % the maximum solar power point was never reached
-        results.t_max = NaN;
-        break; % abort the search
+if(~flags.sunset_reached)
+    results.t_max = 12*3600;
+else
+    d_irr = 0;
+    while d_irr >= 0
+        irr_old = irr;
+        irr_vec = solar_radiation_on_surface2(0,0,mod(t+environment.add_solar_timeshift,86400),(environment.dayofyear+floor(t/86400)),...
+                    environment.lat,0, h,environment.albedo);
+        irr = irr_vec(1);
+        d_irr = irr - irr_old;
+        if t >= 3600*15
+            flags.max_solarpower_reached = 0; % the maximum solar power point was never reached
+            results.t_max = NaN;
+            break; % abort the search
+        end
+        results.t_max = t;
+        t = t+Dt;
     end
-    results.t_max = t;
 end
 
 %Step 1f: Find t_eq, that means the time when P_Solar=P_elect and thus the charge can start
@@ -124,13 +141,13 @@ while P_solar < P_elec_tot
                 environment.lat,0, h,environment.albedo);
     irr = irr_vec(1);
     P_solar = environment.clearness * irr * plane.ExpPerf.solar.surface * eta_solar;
-    t = t+Dt;
-    if t > results.t_max
+    if (t > results.t_max || ~flags.max_solarpower_reached)
         flags.eq_reached = 0; % the equilibrium point was never reached
         t_eq = NaN;
         break; % abort the search
     end
     t_eq = t;
+    t = t+Dt;
 end
 
 %Step 1g: Find t_eq2, that means the time when P_Solar=P_electot again
@@ -150,13 +167,17 @@ else
 end
 
 %Step 1h: Find sunset time
-while irr > 0
-    irr_vec = solar_radiation_on_surface2(0,0,mod(t+environment.add_solar_timeshift,86400),(environment.dayofyear+floor(t/86400)),...
-                environment.lat,0, h,environment.albedo);
-    irr = irr_vec(1);
-    t = t+Dt;
+if(flags.sunset_reached)
+    while irr > 0
+        irr_vec = solar_radiation_on_surface2(0,0,mod(t+environment.add_solar_timeshift,86400),(environment.dayofyear+floor(t/86400)),...
+                    environment.lat,0, h,environment.albedo);
+        irr = irr_vec(1);
+        t = t+Dt;
+    end
+    results.t_sunset = t;
+else
+    results.t_sunset = NaN;
 end
-results.t_sunset = t;
 
 % -------------------------------------------------------------------
 % STEP 2: Pre-simulate the day
@@ -167,6 +188,7 @@ if flags.eq_reached == 1
     E_bat = 0;
 elseif (flags.eq_reached == 0)
     t = results.t_max;
+    if(~flags.max_solarpower_reached) t = 12*3600; end
     E_bat = E_bat_max/2;
 end
 
@@ -401,7 +423,7 @@ end
 %---------------------------------------------------------------------
 if(settings.DEBUG==1)
     %Plot_BasicSimulationTimePlot(flightdata,environment,params, plane);
-    Plot_BasicSimulationTimePlot_ASJFR81hFlightPaper(flightdata,environment,params, plane);
+    Plot_BasicSimulationTimePlot(flightdata,environment,params, plane);
 end
 
 if(settings.DEBUG==1)
