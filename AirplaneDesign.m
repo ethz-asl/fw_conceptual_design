@@ -35,12 +35,29 @@ addpath(genpath('matlab_functions'))
 % vars(1)= VAR.WING_SPAN;
 % vars(1).values = 3:1:5; %Analyse over wing spans from 3 to 5m in 1m steps
 
-vars(1) = VAR.DAY_OF_YEAR; %VAR.BATTERY_MASS;
-vars(1).values = floor(0*30.5):5:floor(11*30.5+29); %2.7:0.1:3.0;
-vars(2) = VAR.LATITUDE; %VAR.WING_SPAN;
-vars(2).values = 0:2.5:70; %5.4:0.1:5.8;
+%P1
+vars(1) = VAR.WING_SPAN;
+vars(1).values = 3.5:0.1:6.5;
+vars(2) = VAR.BATTERY_MASS;
+vars(2).values = 1.0:0.1:7.0;
 vars(3) = VAR.ASPECT_RATIO;
 vars(3).values = 18.5;
+
+%P2
+% vars(1) = VAR.DAY_OF_YEAR; %VAR.BATTERY_MASS;
+% vars(1).values = floor(0*30.5):5:floor(11*30.5+29); %2.7:0.1:3.0;
+% vars(2) = VAR.LATITUDE; %VAR.WING_SPAN;
+% vars(2).values = 0:2.5:70; %5.4:0.1:5.8;
+% vars(3) = VAR.ASPECT_RATIO;
+% vars(3).values = 18.5;
+
+% P3
+% vars(1) = VAR.CLEARNESS; %VAR.BATTERY_MASS;
+% vars(1).values = 0.4:0.025:1;
+% vars(2) = VAR.TURBULENCE; %VAR.WING_SPAN;
+% vars(2).values = 0.0:0.025:0.6;; %5.4:0.1:5.8;
+% vars(3) = VAR.DAY_OF_YEAR;
+% vars(3).values = [floor(3*30.5+21), floor(5*30.5+21)];
 
 % Airplane general technological parameters first
 initParameters;
@@ -135,5 +152,5 @@ close(h)
 % folder. Please modify and call these scripts if you want to modify the 
 % plots
 
-Plot_AirplaneDesign_Standard(PerfResults, DesignResults, environment, plane, params, flightdata, vars);
+Plot_AirplaneDesign_ASFinalPaper(PerfResults, DesignResults, environment, plane, params, flightdata, vars);
 %Plot_AirplaneDesign_ASFinalPaper(PerfResults, DesignResults, environment, plane, params, flightdata, vars);
