@@ -1,2 +1,6 @@
-*.asv
 results/*
+*.asv
+*.jpg
+*.eps
+*.png
+*.jpg
