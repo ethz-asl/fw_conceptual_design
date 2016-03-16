@@ -70,7 +70,7 @@ flags.full_charge_reached = 1;
 t = 0;
 h = environment.h_0;
 P_solar = 0;
-irr = 0;
+irr_vec = zeros(1,9);
 
 %STEP 1a: Simple pre-calculations
 E_bat_max = params.bat.e_density * plane.bat.m; % maximum battery energy state
@@ -94,11 +94,10 @@ end
 P_elec_tot = P_elec_level + plane.avionics.power + plane.payload.power;
 
 %Step 1d: Find t_sunrise, i.e. when P_solar=0.
-while irr <= 0
+while irr_vec(1) <= 0
     irr_vec = solar_radiation_on_surface2(0,0,mod(t+environment.add_solar_timeshift,86400),(environment.dayofyear+floor(t/86400)),...
                 environment.lat,0, h,environment.albedo);
-    irr = irr_vec(1);
-    if (t==0 && irr>0) %Special case 1: Sun does not set during night
+    if (t==0 && irr_vec(1)>0) %Special case 1: Sun does not set during night
         flags.sunset_reached = 0;
         flags.sunrise_reached = 0;
         results.t_sunrise=0;
@@ -119,11 +118,10 @@ if(~flags.sunset_reached)
 else
     d_irr = 0;
     while d_irr >= 0
-        irr_old = irr;
+        irr_old = irr_vec(1);
         irr_vec = solar_radiation_on_surface2(0,0,mod(t+environment.add_solar_timeshift,86400),(environment.dayofyear+floor(t/86400)),...
                     environment.lat,0, h,environment.albedo);
-        irr = irr_vec(1);
-        d_irr = irr - irr_old;
+        d_irr = irr_vec(1) - irr_old;
         if t >= 3600*15
             flags.max_solarpower_reached = 0; % the maximum solar power point was never reached
             results.t_max = NaN;
@@ -137,10 +135,7 @@ end
 %Step 1f: Find t_eq, that means the time when P_Solar=P_elect and thus the charge can start
 t = results.t_sunrise;
 while P_solar < P_elec_tot
-    irr_vec = solar_radiation_on_surface2(0,0,mod(t+environment.add_solar_timeshift,86400),(environment.dayofyear+floor(t/86400)),...
-                environment.lat,0, h,environment.albedo);
-    irr = irr_vec(1);
-    P_solar = environment.clearness * irr * plane.ExpPerf.solar.surface * eta_solar;
+    [P_solar,irr_vec] = CalculateIncomingSolarPower(t,h,environment,plane,eta_solar);
     if (t > results.t_max || ~flags.max_solarpower_reached)
         flags.eq_reached = 0; % the equilibrium point was never reached
         t_eq = NaN;
@@ -155,10 +150,7 @@ end
 if(flags.eq_reached)
     t = results.t_max;
     while P_solar >= P_elec_tot
-        irr_vec = solar_radiation_on_surface2(0,0,mod(t+environment.add_solar_timeshift,86400),(environment.dayofyear+floor(t/86400)),...
-                    environment.lat,0, h,environment.albedo);
-        irr = irr_vec(1);
-        P_solar = environment.clearness * irr * plane.ExpPerf.solar.surface * eta_solar;
+        [P_solar,irr_vec] = CalculateIncomingSolarPower(t,h,environment,plane,eta_solar);
         t = t+Dt;
     end
     t_eq2 = t;
@@ -168,10 +160,9 @@ end
 
 %Step 1h: Find sunset time
 if(flags.sunset_reached)
-    while irr > 0
+    while irr_vec(1) > 0
         irr_vec = solar_radiation_on_surface2(0,0,mod(t+environment.add_solar_timeshift,86400),(environment.dayofyear+floor(t/86400)),...
                     environment.lat,0, h,environment.albedo);
-        irr = irr_vec(1);
         t = t+Dt;
     end
     results.t_sunset = t;
@@ -198,10 +189,7 @@ while E_bat < E_bat_max
     if t < results.t_sunrise;
         P_solar = 0; % set zero light before sunrise
     else
-        irr_vec = solar_radiation_on_surface2(0,0,mod(t+environment.add_solar_timeshift,86400),(environment.dayofyear+floor(t/86400)),...
-            environment.lat,0, h,environment.albedo);
-        irr = irr_vec(1);
-        P_solar = environment.clearness * irr * plane.ExpPerf.solar.surface * eta_solar;
+        [P_solar,irr_vec] = CalculateIncomingSolarPower(t,h,environment,plane,eta_solar);
     end
     E_bat = E_bat + Dt * (P_elec_tot-P_solar) / params.bat.eta_dchrg;
 end
@@ -272,10 +260,7 @@ while E_bat >=0 && h>=environment.h_0 && t<=t_sim_end
     if(tmod<results.t_sunrise || tmod>results.t_sunset)
         P_solar = 0;
     else
-        irr_vec = solar_radiation_on_surface2(0,0,mod(t+environment.add_solar_timeshift,86400),(environment.dayofyear+floor(t/86400)),...
-                environment.lat,0, h,environment.albedo);
-        irr = irr_vec(1);
-        P_solar = environment.clearness * irr * plane.ExpPerf.solar.surface * eta_solar;
+        [P_solar,irr_vec] = CalculateIncomingSolarPower(t,h,environment,plane,eta_solar);
     end
     
     % -------------------------------------------------------------------
@@ -284,7 +269,6 @@ while E_bat >=0 && h>=environment.h_0 && t<=t_sim_end
     % TODO for future: This can probably be simplified a lot. 
 
     if(E_bat >= E_bat_max) %fully charged! ->dayflight=> level flight/climb
-        %E_bat = E_bat_max; %TOCHECK
 
         %Case 1: Already above h_0, i.e. in climbing or descending flight
         if(h > environment.h_0)
@@ -359,7 +343,7 @@ while E_bat >=0 && h>=environment.h_0 && t<=t_sim_end
     flightdata.t_array = [flightdata.t_array, t];
     flightdata.h_array = [flightdata.h_array, h];
     flightdata.bat_array = [flightdata.bat_array, E_bat];
-    flightdata.irr_array = [flightdata.irr_array, irr];
+    flightdata.irr_array = [flightdata.irr_array, irr_vec(1)];
     flightdata.P_solar_array = [flightdata.P_solar_array, P_solar];
     flightdata.P_elec_tot_array = [flightdata.P_elec_tot_array, P_elec_tot];
     flightdata.P_prop_array = [flightdata.P_prop_array, P_prop];
