@@ -234,7 +234,7 @@ while E_bat >=0 && h>=environment.h_0 && t<=t_sim_end
 
     % Pre-calculate potential level-power increase due to atmospheric turbulence
     turb = environment.turbulence;
-    if(tmod > t_eq+2*3600 && tmod < t_eq2*3600) %Heuristics only
+    if(tmod > results.t_sunrise+4.0*3600 && tmod < results.t_sunset-1.5*3600) %Heuristics only. Identified on AtlantikSolar 81h-flight
         turb = turb + environment.turbulence_day; 
     end
     
