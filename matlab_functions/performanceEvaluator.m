@@ -36,6 +36,7 @@ flightdata.m_bat = plane.bat.m;
 flightdata.t_array = [];
 flightdata.h_array = [];
 flightdata.irr_array = [];
+flightdata.eta_array = [];
 flightdata.bat_array = [];
 flightdata.P_solar_array = [];
 flightdata.P_elec_tot_array = [];
@@ -74,9 +75,6 @@ irr_vec = zeros(1,9);
 
 %STEP 1a: Simple pre-calculations
 E_bat_max = params.bat.e_density * plane.bat.m; % maximum battery energy state
-
-c_temp = 1.0 - params.solar.k_temp*(environment.T_ground - (273.15 + 25));
-eta_solar = params.solar.eta_sc * c_temp * params.solar.eta_cbr * params.solar.eta_mppt;
 
 if(~(exist('plane', 'var') && isfield(plane, 'ExpPerf') && isfield(plane.ExpPerf, 'solar') && isfield(plane.ExpPerf.solar, 'surface'))) 
     plane.ExpPerf.solar.surface = plane.struct.b^2/plane.struct.AR*params.solar.rWngCvrg;
@@ -135,7 +133,7 @@ end
 %Step 1f: Find t_eq, that means the time when P_Solar=P_elect and thus the charge can start
 t = results.t_sunrise;
 while P_solar < P_elec_tot
-    [P_solar,irr_vec] = CalculateIncomingSolarPower(t,h,environment,plane,eta_solar);
+    [P_solar,irr_vec,~] = CalculateIncomingSolarPower(t,h,environment,plane,settings,params);
     if (t > results.t_max || ~flags.max_solarpower_reached)
         flags.eq_reached = 0; % the equilibrium point was never reached
         t_eq = NaN;
@@ -150,7 +148,7 @@ end
 if(flags.eq_reached)
     t = results.t_max;
     while P_solar >= P_elec_tot
-        [P_solar,irr_vec] = CalculateIncomingSolarPower(t,h,environment,plane,eta_solar);
+        [P_solar,irr_vec,~] = CalculateIncomingSolarPower(t,h,environment,plane,settings,params);
         t = t+Dt;
     end
     t_eq2 = t;
@@ -189,7 +187,7 @@ while E_bat < E_bat_max
     if t < results.t_sunrise;
         P_solar = 0; % set zero light before sunrise
     else
-        [P_solar,irr_vec] = CalculateIncomingSolarPower(t,h,environment,plane,eta_solar);
+        [P_solar,irr_vec,~] = CalculateIncomingSolarPower(t,h,environment,plane,settings,params);
     end
     E_bat = E_bat + Dt * (P_elec_tot-P_solar) / params.bat.eta_dchrg;
 end
@@ -260,7 +258,7 @@ while E_bat >=0 && h>=environment.h_0 && t<=t_sim_end
     if(tmod<results.t_sunrise || tmod>results.t_sunset)
         P_solar = 0;
     else
-        [P_solar,irr_vec] = CalculateIncomingSolarPower(t,h,environment,plane,eta_solar);
+        [P_solar,irr_vec, P_solar_etas] = CalculateIncomingSolarPower(t,h,environment,plane,settings,params);
     end
     
     % -------------------------------------------------------------------
@@ -343,7 +341,8 @@ while E_bat >=0 && h>=environment.h_0 && t<=t_sim_end
     flightdata.t_array = [flightdata.t_array, t];
     flightdata.h_array = [flightdata.h_array, h];
     flightdata.bat_array = [flightdata.bat_array, E_bat];
-    flightdata.irr_array = [flightdata.irr_array, irr_vec(1)];
+    flightdata.irr_array = [flightdata.irr_array, [irr_vec(1) ; irr_vec(7)]];
+    flightdata.eta_array = [flightdata.eta_array, [P_solar_etas(1) ; P_solar_etas(2)]];
     flightdata.P_solar_array = [flightdata.P_solar_array, P_solar];
     flightdata.P_elec_tot_array = [flightdata.P_elec_tot_array, P_elec_tot];
     flightdata.P_prop_array = [flightdata.P_prop_array, P_prop];

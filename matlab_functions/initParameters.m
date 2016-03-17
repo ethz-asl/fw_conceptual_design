@@ -41,6 +41,9 @@ params.solar.eta_sc         = 0.235;    % Efficiency of solar cells (more precis
 params.solar.eta_cbr        = 0.95;     % Eff. of cambered conf. [-]
 params.solar.eta_mppt       = 0.96;     % Efficiency of mppt [-]
 params.solar.k_temp         = 0.003;    % Solar power (and thus eta) reduction in [1/K]
+params.solar.epsilon_diff   = 0.82707;  % Component efficiency for incoming diffuse solar radiation.
+params.solar.angle_AOI      = [0 15 30 45 60 70 75 80 84 87 90] / 180.0 * pi();         % Angle (AOI) of incoming diffuse solar radiation
+params.solar.epsilon_AOI    = [1 0.997 0.988 0.97 0.915 0.76 0.65 0.56 0.46 0.34 0];    % Component efficiency for respective AOI
 
 %==== Structure ===========================================================
 params.structure.shell      = 0;        % 1 for shell wing, 0 for rib wing

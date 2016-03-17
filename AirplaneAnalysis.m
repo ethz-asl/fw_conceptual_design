@@ -67,6 +67,8 @@ settings.SimType = 0;                       % 0 = Start on t_eq, 1 = start on sp
 settings.SimTimeDays = 2;                   % Simulation Time in days (e.g. 1 = std. 24h simulation)
 settings.InitCond.SoC = 0.46;               % State-of-charge [-]
 settings.InitCond.t = 9.0*3600 + 32*60;     % [s]launch time
+settings.useAOI = 1;                        % 1 to enable the use of angle-of-incidence dependent solar module efficiency
+settings.useDirDiffRad = 1;                 % 1 to enable the use of separate diffuse and direct radiation solar module efficiencies
 
 % -------------------------------------------------------------------------
 % STEP 2: Calculate analysis results

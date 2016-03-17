@@ -9,7 +9,7 @@ function [] = Plot_BasicSimulationTimePlot(flightdata,environment,params, plane)
     figure('Name',str);
     
     % Altitude
-    ax(1)=subplot(3,1,1);
+    ax(1)=subplot(5,1,1);
     dh_array=zeros(size(flightdata.h_array));
     dh_array(1)=0;
     for i=2:size(flightdata.h_array,2)
@@ -19,15 +19,21 @@ function [] = Plot_BasicSimulationTimePlot(flightdata,environment,params, plane)
     legend('h');
     ylabel('Altitude above MSL [m]');
 
+    %Angles & Sun
+    ax(end+1)=subplot(5,1,2);
+    plot(time, flightdata.irr_array(2,:) * 180 / pi());
+    ylabel('Angles');
+    legend('Sun incidence angle [°]');
+    
     % Battery state
-    subplot(3,1,2);
+    subplot(5,1,3);
     E_bat_max = plane.bat.m * params.bat.e_density;
     [ax(end+1:end+2),~,~] = plotyy(time, flightdata.bat_array/E_bat_max, time, flightdata.bat_array/3600);
     ylabel('Battery Charge State');
     legend('Battery SoC[%]','Battery Energy [Wh]');
 
     %Power in- and output
-    ax(end+1)=subplot(3,1,3);
+    ax(end+1)=subplot(5,1,4);
     plot(time, flightdata.P_solar_array,...
          time, flightdata.P_elec_tot_array,...
          time, flightdata.P_prop_array,...
@@ -37,6 +43,12 @@ function [] = Plot_BasicSimulationTimePlot(flightdata,environment,params, plane)
     ylabel('Power [W] or [W/m^2]');
     xlabel('Time of Day [h]');
     legend('P_{Solar}[W]','P_{electot}[W]','P_{prop}[W]','P_{avionics}[W]','P_{battery}[W]','P_{payload}[W]');
+    
+    %Angles & Sun
+    ax(end+1)=subplot(5,1,5);
+    plot(time, [flightdata.eta_array(1,:) ; flightdata.eta_array(2,:)]);
+    ylabel('Efficiency');
+    legend('\eta_{sm}','\epsilon_{AOI}');
     
     linkaxes(ax,'x');
 end

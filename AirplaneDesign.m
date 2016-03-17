@@ -61,8 +61,9 @@ vars(3).values = 18.5;
 
 % Airplane general technological parameters first
 initParameters;
-params.structure.corr_fact = 1.21;    % Structural mass correction factor. Set to 1.0 to use without correction.Chose 1.21 
-                                      % to correspond to AtlantikSolar initial structural mass calculation by D. Siebenmann. 
+params.structure.corr_fact = 1.21;    % Structural mass correction factor. Set to 
+                                      % * 1.0 to use the original model without correction.
+                                      % * 1.21 to correspond to AtlantikSolar initial structural mass calculation by D. Siebenmann
 
 % This is the default configuration for our design variables! 
 % (which is only used if we don't design over b, m_bat or AR)
@@ -100,6 +101,8 @@ settings.InitCond.SoC = 0.46;               % State-of-charge [-]
 settings.InitCond.t = 9.0*3600 + 32*60;     % [s]launch time
 settings.evaluation.findalt = 0;            % if 1, it finds the maximum altitude for eternal flight
 %settings.optGRcruise       =  0;           % 1 to allow cruise at optimal glide ratio & speed when max altitude reached 
+settings.useAOI = 0;                        % 1 to enable the use of angle-of-incidence dependent solar module efficiency
+settings.useDirDiffRad = 0;                 % 1 to enable the use of separate diffuse and direct radiation solar module efficiencies
 
 % -------------------------------------------------------------------------
 % STEP 2: Calculate performance results
