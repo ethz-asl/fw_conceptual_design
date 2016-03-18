@@ -33,7 +33,7 @@ initParameters;
 params.bat.chrg_lim_type = 2;   % Enable charge limiting using experimental data
 
 %This is the plane-specific data
-plane.m_no_bat = 6.81-2.918;
+plane.m_no_bat = 6.92-2.918;
 plane.struct.b = 5.65;
 plane.struct.AR = 18.5;
 plane.bat.m = 2.918+0*0.293+0*0.04863;

@@ -37,9 +37,9 @@ params.solar.k_sc           = 0.39;     % Mass density of sc [Kg/m2].
 params.solar.k_enc          = 0.2;      % Mass dens. of encaps. and cables! [Kg/m2]
 params.solar.k_mppt         = 1/2368;   % Mass/Power of mppt [kg/W]
 params.solar.rWngCvrg       = 0.85;     % relative solar cell wing coverage area/without winglet area
-params.solar.eta_sc         = 0.235;    % Efficiency of solar cells (more precisely: modules) [-]
-params.solar.eta_cbr        = 0.95;     % Eff. of cambered conf. [-]
-params.solar.eta_mppt       = 0.96;     % Efficiency of mppt [-]
+params.solar.eta_sc         = 0.237;    % Efficiency of solar cells (more precisely: modules) [-]
+params.solar.eta_cbr        = 0.97;     % Eff. of cambered conf. [-]
+params.solar.eta_mppt       = 0.95;     % Efficiency of mppt [-]
 params.solar.k_temp         = 0.003;    % Solar power (and thus eta) reduction in [1/K]
 params.solar.epsilon_diff   = 0.82707;  % Component efficiency for incoming diffuse solar radiation.
 params.solar.angle_AOI      = [0 15 30 45 60 70 75 80 84 87 90] / 180.0 * pi();         % Angle (AOI) of incoming diffuse solar radiation
@@ -78,6 +78,7 @@ plane.payload.power        = 3.0;      % Power required for payload [W]
 plane.prop.P_prop_max      = 180.0;    % Max. prop/climbing power
 
 
-
-
+%==========================================================================
+%=== ENVIRONMENTAL CHARACTERISTICS (Defaults only) ========================
+%==========================================================================
 environment.usemars        = 0;
