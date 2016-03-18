@@ -22,7 +22,7 @@ addpath(genpath('matlab_functions'))
 % in the file Var.m). If you only want to specify one or two variables, simply 
 % provide a constant value for the remaining (i.e. the second/third) one
 vars(1) = VAR.DAY_OF_YEAR;
-vars(1).values = round(5*30.5+21);%:5:round(6*30.5+26);
+vars(1).values = 5*30.5+30;%:5:round(6*30.5+26);
 vars(2) = VAR.CLEARNESS;
 vars(2).values = 1.0;%0.5:0.25:1;
 vars(3) = VAR.TURBULENCE;
@@ -42,20 +42,20 @@ plane.ExpPerf.m = plane.m_no_bat+plane.bat.m;    %
 plane.ExpPerf.solar.surface = 88 * (0.125^2 - 4*70.36E-6);
 plane.ExpPerf.P_prop_level = 37;          %
 plane.ExpPerf.rho_P_prop_level = 1.095;     % Density at which power curve of aircraft was recorded
-plane.avionics.power = 5.5;
+plane.avionics.power = 6.0;
 plane.payload.power = 0;
 plane.prop.P_prop_max = 180.0;
     
-%These are the environment parameters
-environment.dayofyear = round(5*30.5+21);
+%These are the (default) environment parameters
+environment.dayofyear = 5*30.5+30;          % Only used if you do not specify this as a VARIABLE above
 environment.lat = 47.6;                     % Rafz
-environment.lon = 8.5;
+environment.lon = 8.53;
 environment.h_0 = 416+120;                  % with 120m AGL flight altitude for enough safety
 environment.h_max = 700;                   %
 environment.T_ground = 28+271.15;
 environment.turbulence = 0;
 environment.turbulence_day = 0.0;           % Relative increase of power consumption during the day, e.g. due to thermals
-environment.clearness = 1.0;
+environment.clearness = 1.0;                % Only used if you do not specify this as a VARIABLE above
 environment.albedo = 0.12;
 environment.add_solar_timeshift = -3600;    % [s], due to Daylight Saving Time (DST)
 

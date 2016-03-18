@@ -8,8 +8,8 @@ function [ PSolar, irr_vec, etas] = CalculateIncomingSolarPower(t,h,environment,
     eta_solar = params.solar.eta_sc * c_temp * params.solar.eta_mppt;
 
     % Irradiation
-    irr_vec = solar_radiation_on_surface2(0,0,mod(t+environment.add_solar_timeshift,86400),(environment.dayofyear+floor(t/86400)),...
-                environment.lat,0, h,environment.albedo);
+    irr_vec = solar_radiation_on_surface2(0,0,mod(t+environment.add_solar_timeshift,86400),(environment.dayofyear+floor((t+environment.add_solar_timeshift)/86400)),...
+                environment.lat,environment.lon, h,environment.albedo);
     
     % AOI-handling
     epsilonAOI = 1.0;

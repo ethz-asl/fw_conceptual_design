@@ -73,6 +73,9 @@ h = environment.h_0;
 P_solar = 0;
 irr_vec = zeros(1,9);
 
+% Data cleaning
+environment.dayofyear = round(environment.dayofyear);
+
 %STEP 1a: Simple pre-calculations
 E_bat_max = params.bat.e_density * plane.bat.m; % maximum battery energy state
 
@@ -94,7 +97,7 @@ P_elec_tot = P_elec_level + plane.avionics.power + plane.payload.power;
 %Step 1d: Find t_sunrise, i.e. when P_solar=0.
 while irr_vec(1) <= 0
     irr_vec = solar_radiation_on_surface2(0,0,mod(t+environment.add_solar_timeshift,86400),(environment.dayofyear+floor(t/86400)),...
-                environment.lat,0, h,environment.albedo);
+                environment.lat,environment.lon, h,environment.albedo);
     if (t==0 && irr_vec(1)>0) %Special case 1: Sun does not set during night
         flags.sunset_reached = 0;
         flags.sunrise_reached = 0;
@@ -118,7 +121,7 @@ else
     while d_irr >= 0
         irr_old = irr_vec(1);
         irr_vec = solar_radiation_on_surface2(0,0,mod(t+environment.add_solar_timeshift,86400),(environment.dayofyear+floor(t/86400)),...
-                    environment.lat,0, h,environment.albedo);
+                    environment.lat,environment.lon, h,environment.albedo);
         d_irr = irr_vec(1) - irr_old;
         if t >= 3600*15
             flags.max_solarpower_reached = 0; % the maximum solar power point was never reached
@@ -160,7 +163,7 @@ end
 if(flags.sunset_reached)
     while irr_vec(1) > 0
         irr_vec = solar_radiation_on_surface2(0,0,mod(t+environment.add_solar_timeshift,86400),(environment.dayofyear+floor(t/86400)),...
-                    environment.lat,0, h,environment.albedo);
+                    environment.lat,environment.lon, h,environment.albedo);
         t = t+Dt;
     end
     results.t_sunset = t;
@@ -257,6 +260,8 @@ while E_bat >=0 && h>=environment.h_0 && t<=t_sim_end
 
     if(tmod<results.t_sunrise || tmod>results.t_sunset)
         P_solar = 0;
+        P_solar_etas = [NaN NaN];
+        irr_vec = NaN*ones(1,9);
     else
         [P_solar,irr_vec, P_solar_etas] = CalculateIncomingSolarPower(t,h,environment,plane,settings,params);
     end
@@ -334,9 +339,6 @@ while E_bat >=0 && h>=environment.h_0 && t<=t_sim_end
     end
     E_bat = min(E_bat+delta_E, E_bat_max);
 
-    % Dt: Time
-    t = t + Dt;
-
     %Store flight data
     flightdata.t_array = [flightdata.t_array, t];
     flightdata.h_array = [flightdata.h_array, h];
@@ -351,6 +353,9 @@ while E_bat >=0 && h>=environment.h_0 && t<=t_sim_end
     %flightdata.CL_array = [flightdata.CL_array, CL];
     %flightdata.CD_array = [flightdata.CD_array, CD];
     %flightdata.v_array = [flightdata.v_array, v];
+    
+    % Dt: Time
+    t = t + Dt;
 end
 %--------------------------------------------
 % MAIN SIMULATION LOOP END

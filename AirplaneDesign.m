@@ -79,7 +79,7 @@ plane.payload.mass = 0.0;
 plane.prop.P_prop_max = 180.0;
 
 % Set environment
-environment.dayofyear = round(5*30.5+21);
+environment.dayofyear = 5*30.5+21;
 environment.lat = 47.6;                     % 1: Barcelona 2:Tuggen/CH
 environment.lon = 8.5;
 environment.h_0 = 416+120;                  % with 120m AGL flight altitude for enough safety
