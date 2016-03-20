@@ -26,13 +26,13 @@ function Plot_AirplaneAnalysis_Standard(results, vars)
         % PLOT1: T_EXCESS
         subplot(2,2,1);
         if(numel(vars(2).values)>1)
-            contourf(vars(1).values,vars(2).values,temp_t_exc,[0.01:0.05:max(max(max(temp_t_exc)))],'Linestyle','none');
+            contourf(vars(1).values,vars(2).values,temp_t_exc,[0.01:0.05:min(max(max(max(temp_t_exc))),24.0)],'Linestyle','none');
             hold on
             contour(vars(1).values,vars(2).values,temp_t_exc,'LevelStep',1.0,'LineColor',[0 0 0],'ShowText','on');
             ylabel(vars(2).name);
             colormap('jet');
             %colormap(flipud(colormap(hot))); %Set an inverted version of the "hot" colormap
-            caxis([0.5,max(max(max(temp_t_exc)))])
+            caxis([0.5,min(max(max(max(temp_t_exc))),24.0)])
             colorbar
         else
             plot(vars(1).values,temp_t_exc);
@@ -58,7 +58,7 @@ function Plot_AirplaneAnalysis_Standard(results, vars)
         % PLOT1: CHARGE MARGIN
         subplot(2,2,3);
         if(numel(vars(2).values)>1)
-            contourf(vars(1).values,vars(2).values,temp_chargemargin,[0.01:0.05:max(max(max(temp_chargemargin)))],'Linestyle','none');
+            contourf(vars(1).values,vars(2).values,temp_chargemargin,[0.01:0.05:min(max(max(max(temp_chargemargin))),24.0)],'Linestyle','none');
             hold on
             contour(vars(1).values,vars(2).values,temp_chargemargin,'LevelStep',1.0,'LineColor',[0 0 0],'ShowText','on');
             ylabel(vars(2).name);
@@ -73,7 +73,7 @@ function Plot_AirplaneAnalysis_Standard(results, vars)
         % PLOT1: ENDURANCE
         subplot(2,2,4);
         if(numel(vars(2).values)>1)
-            contourf(vars(1).values,vars(2).values,temp_endurance,[0.01:0.5:max(max(max(temp_endurance)))],'Linestyle','none');
+            contourf(vars(1).values,vars(2).values,temp_endurance,[0.01:0.5:max(0.51,max(max(max(temp_endurance))))],'Linestyle','none');
             hold on
             contour(vars(1).values,vars(2).values,temp_endurance,'LevelStep',1.0,'LineColor',[0 0 0],'ShowText','on');
             ylabel(vars(2).name);

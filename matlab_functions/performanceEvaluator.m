@@ -60,8 +60,10 @@ results.t_sunset = NaN;
 flags.sunrise_reached = 1;
 flags.sunset_reached = 1;
 flags.eq_reached = 1;                   % Flag: Power eq. reached or not
+flags.eq_always_exceeded = 0;           % Floag: Power eq. always exceeded (happens e.g. far north in summer when sun does not set)?
 flags.max_solarpower_reached = 1;
 flags.full_charge_reached = 1;
+
 
 % -------------------------------------------------------------------
 % STEP 1: PREPARATORY CALCULATIONS
@@ -115,7 +117,7 @@ end
 
 %Step 1e: Find t_max, i.e. t(P_solar = P_solar_max)
 if(~flags.sunset_reached)
-    results.t_max = 12*3600;
+    results.t_max = 12*3600; % TODO: This is in solar time at the moment, needs to be changed to local time however
 else
     d_irr = 0;
     while d_irr >= 0
@@ -141,6 +143,10 @@ while P_solar < P_elec_tot
         flags.eq_reached = 0; % the equilibrium point was never reached
         t_eq = NaN;
         break; % abort the search
+    elseif (t==results.t_sunrise && P_solar > P_elec_tot)
+        flags.eq_always_exceeded = 1; % the equilibrium point is already exceeded at sunrise -> P_solar is never smaller P_elec_tot!
+        t_eq = NaN;
+        break;
     end
     t_eq = t;
     t = t+Dt;
@@ -148,7 +154,7 @@ end
 
 %Step 1g: Find t_eq2, that means the time when P_Solar=P_electot again
 %        and thus the discharge would have to start if flying at h_0
-if(flags.eq_reached)
+if(flags.eq_reached && ~flags.eq_always_exceeded)
     t = results.t_max;
     while P_solar >= P_elec_tot
         [P_solar,irr_vec,~] = CalculateIncomingSolarPower(t,h,environment,plane,settings,params);
@@ -176,8 +182,10 @@ end
 % -------------------------------------------------------------------
 
 if flags.eq_reached == 1
-    t = t_eq;
     E_bat = 0;
+    if(~flags.eq_always_exceeded) t = t_eq;
+    else t = 0;
+    end
 elseif (flags.eq_reached == 0)
     t = results.t_max;
     if(~flags.max_solarpower_reached) t = 12*3600; end
@@ -206,7 +214,9 @@ h_before = h;
 if(settings.SimType == 0)
     if(flags.eq_reached == 1)
         E_bat = 0;
-        t = t_eq;
+        if(~flags.eq_always_exceeded) t = t_eq;
+        else t = 0;
+        end
     else
         E_bat = E_bat_max;
         t = t_start_full;
@@ -343,7 +353,7 @@ while E_bat >=0 && h>=environment.h_0 && t<=t_sim_end
     flightdata.t_array = [flightdata.t_array, t];
     flightdata.h_array = [flightdata.h_array, h];
     flightdata.bat_array = [flightdata.bat_array, E_bat];
-    flightdata.irr_array = [flightdata.irr_array, [irr_vec(1) ; irr_vec(7)]];
+    flightdata.irr_array = [flightdata.irr_array, [irr_vec(1) ; irr_vec(2) ; irr_vec(7)]];
     flightdata.eta_array = [flightdata.eta_array, [P_solar_etas(1) ; P_solar_etas(2)]];
     flightdata.P_solar_array = [flightdata.P_solar_array, P_solar];
     flightdata.P_elec_tot_array = [flightdata.P_elec_tot_array, P_elec_tot];
@@ -368,7 +378,10 @@ t_end = t;
 % Note that all results.XXX fields have been initialized to NaN before.
 if flags.eq_reached == 1
     % Step 4.1: Excess Time & min-SoC
-    if(t_end-24*3600 < t_eq)
+    if(flags.eq_always_exceeded)
+        results.t_excess = Inf();
+        results.min_SoC = 1;
+    elseif(t_end-24*3600 < t_eq)
         % Case a) We have not made it through the night (negative t_exc !)
         results.t_excess = (t_end-(24*3600+t_eq))/3600;
     else
@@ -383,19 +396,23 @@ if flags.eq_reached == 1
         results.min_SoC = flightdata.bat_array(idx_lastteq)/E_bat_max;
     end
     % Step 4.2: Charge margin
-    % We do extensive searches here to find not any but the correct (of 
-    % the last day) charge margin, so we basically do backwards search.
-    idx_current = numel(flightdata.t_array);
-    idx_lastfullcharge_end = find(flightdata.bat_array == E_bat_max,1,'last');
-    idx_lastteqbeforelastfullcharge = find(mod(flightdata.t_array(1:idx_lastfullcharge_end)-t_eq,86400) < Dt,1,'last');
-    if(isempty(idx_lastteqbeforelastfullcharge)) idx_lastteqbeforelastfullcharge=1; end %Handle case of not t_eq before
-    idx_lastfullcharge_start = idx_lastteqbeforelastfullcharge - 1 + find (flightdata.bat_array(idx_lastteqbeforelastfullcharge:idx_lastfullcharge_end) == E_bat_max,1,'first');
-    if(isempty(idx_lastfullcharge_end) || isempty(idx_lastfullcharge_start))
-        results.t_fullcharge=NaN;
-        results.t_fullcharge=NaN;
-    else
-        results.t_fullcharge = mod(flightdata.t_array(idx_lastfullcharge_start),86400)/3600.0;
-        results.t_chargemargin = (flightdata.t_array(idx_lastfullcharge_end)-flightdata.t_array(idx_lastfullcharge_start))/3600.0;
+    if(flags.eq_always_exceeded)
+        results.t_chargemargin = Inf();
+    else    
+        % We do extensive searches here to find not any but the correct (of 
+        % the last day) charge margin, so we basically do backwards search.
+        idx_current = numel(flightdata.t_array);
+        idx_lastfullcharge_end = find(flightdata.bat_array == E_bat_max,1,'last');
+        idx_lastteqbeforelastfullcharge = find(mod(flightdata.t_array(1:idx_lastfullcharge_end)-t_eq,86400) < Dt,1,'last');
+        if(isempty(idx_lastteqbeforelastfullcharge)) idx_lastteqbeforelastfullcharge=1; end %Handle case of not t_eq before
+        idx_lastfullcharge_start = idx_lastteqbeforelastfullcharge - 1 + find (flightdata.bat_array(idx_lastteqbeforelastfullcharge:idx_lastfullcharge_end) == E_bat_max,1,'first');
+        if(isempty(idx_lastfullcharge_end) || isempty(idx_lastfullcharge_start))
+            results.t_fullcharge=NaN;
+            results.t_fullcharge=NaN;
+        else
+            results.t_fullcharge = mod(flightdata.t_array(idx_lastfullcharge_start),86400)/3600.0;
+            results.t_chargemargin = (flightdata.t_array(idx_lastfullcharge_end)-flightdata.t_array(idx_lastfullcharge_start))/3600.0;
+        end
     end
 end
 

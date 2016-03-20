@@ -25,7 +25,7 @@ function [] = Plot_BasicSimulationTimePlot(flightdata,environment,params, plane)
 
     %Angles & Sun
     ax(end+1)=subplot_tight(5,1,2,[plotmargins.vert plotmargins.horiz]);
-    plot(time, flightdata.irr_array(2,:) * 180 / pi());
+    plot(time, flightdata.irr_array(3,:) * 180 / pi());
     ylabel('Angles');
     legend('Sun incidence angle [°]');
     
