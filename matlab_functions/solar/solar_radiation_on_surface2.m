@@ -1,7 +1,8 @@
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%  Moix Pierre-Olivier     %
-%     January 2004         %
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%  Moix Pierre-Olivier, January 2004 (Main Code)
+%  Philipp Oettershagen, Autonomous Systems Lab, ETH Zurich, March 2016 (only small extensions)
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
 %  MODIFIED FOR THE INDEPENDENT SOLAR RADIATION CALCULATOR
 %
 % solar_radiation_on_surface.m
@@ -21,6 +22,9 @@
 %     slope in degrees: horizontal=0, vertical=90
 %     orien in degrees South=0, East=90, West=-90, North=180
 %     ts0 is time in seconds
+%     day is the day of year (1 = January 1st)
+%     latitude in degrees, north = positive
+%     longitude in degrees, 0° = Prime Meridian (Greenwich), postive = east
 %     altitude in meters
 %     albedo, from 0 to 1
 %        typically albedo is 
@@ -31,7 +35,8 @@
 %               sea and ocean   0.02 to 0.05 if sun height >30 degrees
 %                               0.02 to 0.2  if sun height <10 degrees 
 %
-%
+%     Note that if Daylight Saving Time (DST) is applied at your location, then 
+%     you need to apply that yourself/manually!
 %
 % The output of the function is an array with the
 % following components (the components not calculated
@@ -60,7 +65,7 @@ ts0=(day)*86400+t;
 
 %%%%%%%%%%%%%%%%%%%%%
 % not modified
-timezone=round(longitude*24/360); % [hours], West>0  
+timezone=round(longitude*24/360); % [hours], West>0  % PhilippOe: Really? Western timezones are negative! Seems like formula is correct, but comment is wrong!
 %We place ourself at Greenwich time in any case
 %as basis, this will be much easier:
 ts0=ts0-timezone*60*60;
@@ -91,7 +96,11 @@ da=2*pi*day/365;
 omega_s=acos(-sindel/cosdel*sinphi/cosphi); %hour angle at sunrise 1.6.10
 tsunrise=43200*(1-omega_s/pi);
 tsunset=43200*(1+omega_s/pi);
-
+if(abs(imag(omega_s))>1e-10) %This happens when the sun never sets
+    %display('Warning: Sunrise and sunset solar angles are imaginary! Does the sun not set?'); %Extension: PhilippOe
+    tsunrise = 0 - longitude/15*3600 -1;    %-1 is added just because of numerical accuracy issues in the following comparison with tsSol0
+    tsunset = 86400 - longitude/15*3600 +1;
+end
 
 %%%%%%%%%%%%%%%%%%%%%
 % et = equation of time, in seconds, 
