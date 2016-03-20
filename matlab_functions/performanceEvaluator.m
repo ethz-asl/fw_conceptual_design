@@ -47,7 +47,7 @@ flightdata.v_array = [];
 flightdata.P_prop_array = [];
 flightdata.P_charge_array = [];
 
-t_eq2 = NaN;
+results.t_eq2 = NaN;
 results.t_fullcharge = NaN;
 results.t_chargemargin = NaN;
 results.t_excess = NaN;
@@ -94,7 +94,7 @@ if(exist('plane', 'var') && isfield(plane, 'ExpPerf') && isfield(plane.ExpPerf, 
 else
     P_elec_level = CalcPFromPolars(plane, params, rho, mu) * (1.0+environment.turbulence);
 end
-P_elec_tot = P_elec_level + plane.avionics.power + plane.payload.power;
+P_elec_level_tot_nom = P_elec_level + plane.avionics.power + plane.payload.power; %This is the nominal (not instantaneous) total electric level-flight power
 
 %Step 1d: Find t_sunrise, i.e. when P_solar=0.
 while irr_vec(1) <= 0
@@ -137,18 +137,18 @@ end
 
 %Step 1f: Find t_eq, that means the time when P_Solar=P_elect and thus the charge can start
 t = results.t_sunrise;
-while P_solar < P_elec_tot
+while P_solar < P_elec_level_tot_nom
     [P_solar,irr_vec,~] = CalculateIncomingSolarPower(t,h,environment,plane,settings,params);
     if (t > results.t_max || ~flags.max_solarpower_reached)
         flags.eq_reached = 0; % the equilibrium point was never reached
-        t_eq = NaN;
+        results.t_eq = NaN;
         break; % abort the search
-    elseif (t==results.t_sunrise && P_solar > P_elec_tot)
-        flags.eq_always_exceeded = 1; % the equilibrium point is already exceeded at sunrise -> P_solar is never smaller P_elec_tot!
-        t_eq = NaN;
+    elseif (t==results.t_sunrise && P_solar > P_elec_level_tot_nom)
+        flags.eq_always_exceeded = 1; % the equilibrium point is already exceeded at sunrise -> P_solar is never smaller P_elec_level_tot_nom!
+        results.t_eq = NaN;
         break;
     end
-    t_eq = t;
+    results.t_eq = t;
     t = t+Dt;
 end
 
@@ -156,13 +156,13 @@ end
 %        and thus the discharge would have to start if flying at h_0
 if(flags.eq_reached && ~flags.eq_always_exceeded)
     t = results.t_max;
-    while P_solar >= P_elec_tot
+    while P_solar >= P_elec_level_tot_nom
         [P_solar,irr_vec,~] = CalculateIncomingSolarPower(t,h,environment,plane,settings,params);
         t = t+Dt;
     end
-    t_eq2 = t;
+    results.t_eq2 = t;
 else
-    t_eq2 = NaN;
+    results.t_eq2 = NaN;
 end
 
 %Step 1h: Find sunset time
@@ -183,7 +183,7 @@ end
 
 if flags.eq_reached == 1
     E_bat = 0;
-    if(~flags.eq_always_exceeded) t = t_eq;
+    if(~flags.eq_always_exceeded) t = results.t_eq;
     else t = 0;
     end
 elseif (flags.eq_reached == 0)
@@ -200,7 +200,7 @@ while E_bat < E_bat_max
     else
         [P_solar,irr_vec,~] = CalculateIncomingSolarPower(t,h,environment,plane,settings,params);
     end
-    E_bat = E_bat + Dt * (P_elec_tot-P_solar) / params.bat.eta_dchrg;
+    E_bat = E_bat + Dt * (P_elec_level_tot_nom-P_solar) / params.bat.eta_dchrg;
 end
 t_start_full = t;
     
@@ -214,7 +214,7 @@ h_before = h;
 if(settings.SimType == 0)
     if(flags.eq_reached == 1)
         E_bat = 0;
-        if(~flags.eq_always_exceeded) t = t_eq;
+        if(~flags.eq_always_exceeded) t = results.t_eq;
         else t = 0;
         end
     else
@@ -227,7 +227,7 @@ elseif(settings.SimType == 1)
 end
 
 t_sim_end = settings.SimTimeDays * 3600 * 24;
-if(~isnan(t_eq)) t_sim_end = t_sim_end + t_eq; end
+if(~isnan(results.t_eq)) t_sim_end = t_sim_end + results.t_eq; end
 % Note: Important to have multiple of days + t_eq here! Sim needs to
 % stop at X-days + t_eq, otherwise t_excess calculation could be wrong!
 
@@ -239,12 +239,6 @@ while E_bat >=0 && h>=environment.h_0 && t<=t_sim_end
 
     tmod = mod(t,86400);
     
-    % Altitude has changed, recalc Re,CL,CD,v,Plevel,Pelectot
-    if(h ~= h_before) 
-        h_before = h;
-        [rho,mu] = findAir(h,environment.T_ground);
-    end
-
     % Pre-calculate potential level-power increase due to atmospheric turbulence
     turb = environment.turbulence;
     if(tmod > results.t_sunrise+4.0*3600 && tmod < results.t_sunset-1.5*3600) %Heuristics only. Identified on AtlantikSolar 81h-flight
@@ -253,12 +247,15 @@ while E_bat >=0 && h>=environment.h_0 && t<=t_sim_end
     
     %Step1b: Calc Total electric power for level flight
     if(turb ~= turb_before || h ~=h_before) 
+        [rho,mu] = findAir(h,environment.T_ground); % Altitude has changed, recalc Re,CL,CD,v,Plevel,Pelectot
+        h_before = h;
+        
         if(exist('plane', 'var') && isfield(plane, 'ExpPerf') && isfield(plane.ExpPerf, 'P_prop_level'))
             P_elec_level = plane.ExpPerf.P_prop_level * sqrt(plane.ExpPerf.rho_P_prop_level/rho) * (1.0 + turb);
         else
             P_elec_level = CalcPFromPolars(plane, params, rho, mu) * (1.0 + turb);
         end
-        P_elec_tot = P_elec_level + plane.avionics.power + plane.payload.power;
+        P_elec_level_tot = P_elec_level + plane.avionics.power + plane.payload.power;
     end
     turb_before = turb;
     
@@ -290,7 +287,7 @@ while E_bat >=0 && h>=environment.h_0 && t<=t_sim_end
                 if(h < environment.h_max)
                     P_prop = P_solar - plane.avionics.power - plane.payload.power;
                 elseif(h == environment.h_max)
-                    if(P_solar >= P_elec_tot)
+                    if(P_solar >= P_elec_level_tot)
                         %Standard control: Only give level power
                         P_prop = P_elec_level;
 %                             %Not implemented anymore                            
@@ -326,30 +323,25 @@ while E_bat >=0 && h>=environment.h_0 && t<=t_sim_end
     % -------------------------------------------------------------------
     % STEP 3c: STATE PROPAGATION
     % -------------------------------------------------------------------
+    
+    % Step 3c1): Calculate the deltas of the CURRENT TIME STEP of the state variables
     % dh/dt : Sink, Climb, or level?
     if(abs(P_prop-P_elec_level)/P_elec_level > 10*eps)
-        % When climbing, efficieny may be different than when sinking
-        if(P_prop>P_elec_level) etaclimb = params.prop.eta_climb;
+        if(P_prop>P_elec_level) etaclimb = params.prop.eta_climb; % When climbing, efficieny may be different than when sinking
         elseif(P_prop<P_elec_level) etaclimb = 1.0;
         end
-
         P_prop = min(P_prop, plane.prop.P_prop_max); %Artificially limit climbing power
-        h = h + Dt*etaclimb*settings.climbAllowed*(P_prop-P_elec_level)/((plane.m_no_bat+plane.bat.m)*params.physics.g);
-    end    
-    if (h<environment.h_0) h=environment.h_0;
-    elseif(h>environment.h_max) h=environment.h_max;
     end
-
     % dE/dt: Charge or discharge?
-    delta_E  = Dt * (P_solar - P_prop - plane.avionics.power - plane.payload.power);
+    P_elec_tot = P_prop + plane.avionics.power + plane.payload.power;
+    delta_E  = Dt * (P_solar - P_elec_tot);
     if delta_E>0
         delta_E = ChargeLimiter(E_bat/E_bat_max, delta_E/Dt * params.bat.eta_chrg, params, plane)*Dt;
     else
         delta_E = delta_E/params.bat.eta_dchrg;
     end
-    E_bat = min(E_bat+delta_E, E_bat_max);
-
-    %Store flight data
+    
+    % Step 3c2): Store flight data of the CURRENT TIME STEP (i.e. including current deltas, but NOT the updated state variables yet)
     flightdata.t_array = [flightdata.t_array, t];
     flightdata.h_array = [flightdata.h_array, h];
     flightdata.bat_array = [flightdata.bat_array, E_bat];
@@ -364,8 +356,15 @@ while E_bat >=0 && h>=environment.h_0 && t<=t_sim_end
     %flightdata.CD_array = [flightdata.CD_array, CD];
     %flightdata.v_array = [flightdata.v_array, v];
     
-    % Dt: Time
+    % Step3: Calculate state variables of the NEXT TIME STEP
     t = t + Dt;
+    E_bat = min(E_bat+delta_E, E_bat_max);
+    if(abs(P_prop-P_elec_level)/P_elec_level > 10*eps)
+        h = h + Dt*etaclimb*settings.climbAllowed*(P_prop-P_elec_level)/((plane.m_no_bat+plane.bat.m)*params.physics.g);
+        if (h<environment.h_0) h=environment.h_0;
+        elseif(h>environment.h_max) h=environment.h_max;
+        end
+    end
 end
 %--------------------------------------------
 % MAIN SIMULATION LOOP END
@@ -381,18 +380,18 @@ if flags.eq_reached == 1
     if(flags.eq_always_exceeded)
         results.t_excess = Inf();
         results.min_SoC = 1;
-    elseif(t_end-24*3600 < t_eq)
+    elseif(t_end-24*3600 < results.t_eq)
         % Case a) We have not made it through the night (negative t_exc !)
-        results.t_excess = (t_end-(24*3600+t_eq))/3600;
+        results.t_excess = (t_end-(24*3600+results.t_eq))/3600;
     else
         % Case b) We have made it through the night (positive t_exc!). We do 
         % extensive searches here to find not any but the correct (of  the 
         % last day) t_exc, so we basically do backwards search.
-        idx_lastteq = find(mod(flightdata.t_array-t_eq,86400) < Dt,1,'last');
+        idx_lastteq = find(mod(flightdata.t_array-results.t_eq,86400) < Dt,1,'last');
         if(isempty(idx_lastteq)) 
             display('WARNING no t_eq for calculation of t_exc found'); 
         end
-        results.t_excess = flightdata.bat_array(idx_lastteq) * params.bat.eta_dchrg / P_elec_tot / 3600;
+        results.t_excess = flightdata.bat_array(idx_lastteq) * params.bat.eta_dchrg / P_elec_level_tot_nom / 3600;
         results.min_SoC = flightdata.bat_array(idx_lastteq)/E_bat_max;
     end
     % Step 4.2: Charge margin
@@ -403,14 +402,14 @@ if flags.eq_reached == 1
         % the last day) charge margin, so we basically do backwards search.
         idx_current = numel(flightdata.t_array);
         idx_lastfullcharge_end = find(flightdata.bat_array == E_bat_max,1,'last');
-        idx_lastteqbeforelastfullcharge = find(mod(flightdata.t_array(1:idx_lastfullcharge_end)-t_eq,86400) < Dt,1,'last');
+        idx_lastteqbeforelastfullcharge = find(mod(flightdata.t_array(1:idx_lastfullcharge_end)-results.t_eq,86400) < Dt,1,'last');
         if(isempty(idx_lastteqbeforelastfullcharge)) idx_lastteqbeforelastfullcharge=1; end %Handle case of not t_eq before
         idx_lastfullcharge_start = idx_lastteqbeforelastfullcharge - 1 + find (flightdata.bat_array(idx_lastteqbeforelastfullcharge:idx_lastfullcharge_end) == E_bat_max,1,'first');
         if(isempty(idx_lastfullcharge_end) || isempty(idx_lastfullcharge_start))
             results.t_fullcharge=NaN;
             results.t_fullcharge=NaN;
         else
-            results.t_fullcharge = mod(flightdata.t_array(idx_lastfullcharge_start),86400)/3600.0;
+            results.t_fullcharge = mod(flightdata.t_array(idx_lastfullcharge_start),86400);
             results.t_chargemargin = (flightdata.t_array(idx_lastfullcharge_end)-flightdata.t_array(idx_lastfullcharge_start))/3600.0;
         end
     end
@@ -432,7 +431,7 @@ if(settings.DEBUG==1)
 end
 
 if(settings.DEBUG==1)
-    str=strcat('d: ',num2str(environment.dayofyear),' t_exc: ', num2str(results.t_excess),' t_endur: ', num2str(results.t_endurance),' t_sr: ', num2str(results.t_sunrise), ' t_eq: ',num2str(t_eq), ' t_eq2: ', num2str(t_eq2));
+    str=strcat('d: ',num2str(environment.dayofyear),' t_exc: ', num2str(results.t_excess),' t_endur: ', num2str(results.t_endurance),' t_sr: ', num2str(results.t_sunrise), ' t_eq: ',num2str(results.t_eq), ' t_eq2: ', num2str(results.t_eq2));
     str=strcat(str, ' t_fc: ',num2str(results.t_fullcharge),' P_eltot: ',num2str(P_elec_tot),' Min. SoC: ',num2str(results.min_SoC));
     display(str);
 end

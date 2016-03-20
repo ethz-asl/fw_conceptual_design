@@ -79,10 +79,13 @@ N = numel(vars(1).values) * numel(vars(2).values) * numel(vars(3).values);
 disp(['Number of configurations to be calculated: ' num2str(N)]);
 h=waitbar(0,'Progress');
 
+str='';
+ctr = 0;
 for i = 1:numel(vars(3).values)
     for k = 1:numel(vars(2).values)
         for j = 1:numel(vars(1).values)
             
+            ctr = ctr+1;
             varval(3)=vars(3).values(i);
             varval(2)=vars(2).values(k);
             varval(1)=vars(1).values(j);
@@ -104,10 +107,18 @@ for i = 1:numel(vars(3).values)
             
             completedRatio = ((i-1)*numel(vars(2).values)*numel(vars(1).values) + (k-1)*numel(vars(1).values) + j)/N;
             waitbar(completedRatio,h,[num2str(completedRatio*100.0,'Progress: %.0f\n') '%']);
+            
+            str = [str sprintf('#%d| Set: DoY=%g,Lat=%g,P=%g,CLR=%g,Turb=%g   Res:Soc_min=%g%%,T_exc=%gh,T_cm=%gh,T_end=%gh   CharTimes:t_sr=%gh t_eq1=%gh t_fc=%gh t_fc90=NA t_eq2=%gh t_ss=%gh\n',ctr,...
+                environment.dayofyear,environment.lat,plane.ExpPerf.P_prop_level,environment.clearness,environment.turbulence,...
+                results(i,k,j).min_SoC*100,results(i,k,j).t_excess,results(i,k,j).t_chargemargin,results(i,k,j).t_endurance,...
+                results(i,k,j).t_sunrise/3600,results(i,k,j).t_eq/3600,results(i,k,j).t_fullcharge/3600, results(i,k,j).t_eq2/3600, results(i,k,j).t_sunset/3600)];
         end
     end
 end
 close(h)
+
+display('*** Performance solutions ***');
+display(str);
 
 % -------------------------------------------------------------------------
 % STEP 3: PLOTTING

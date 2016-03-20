@@ -6,7 +6,7 @@ function Plot_AirplaneAnalysis_Standard(results, vars)
     %       3 variables are specified by the user, b) one contour plot for two
     %       variables, and c) simple 1D-plots for only one specified variable.
     today = now;
-    doy = today - datenum(2015,1,1) + 1
+    doy = today - datenum(2015,1,1) + 1;
 
     for i = 1:numel(vars(3).values)
 
