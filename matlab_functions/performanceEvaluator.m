@@ -239,10 +239,14 @@ while E_bat >=0 && h>=environment.h_0 && t<=t_sim_end
 
     tmod = mod(t,86400);
     
-    % Pre-calculate potential level-power increase due to atmospheric turbulence
+    % Pre-calculate potential level-power increase due to atmospheric turbulence, both in general as well as day-turbulence
     turb = environment.turbulence;
-    if(tmod > results.t_sunrise+4.0*3600 && tmod < results.t_sunset-1.5*3600) %Heuristics only. Identified on AtlantikSolar 81h-flight
-        turb = turb + environment.turbulence_day; 
+    t_dayturb_start = results.t_sunrise + 2.1*3600; %Heuristics only. Identified on AtlantikSolar 81h-flight
+    t_dayturb_end = results.t_sunset - 1.5*3600;    %Heuristics only. Identified on AtlantikSolar 81h-flight
+    t_dayturb_mid = 0.5*(t_dayturb_start+t_dayturb_end);
+    if(tmod > t_dayturb_start && tmod < t_dayturb_end) %Implement linear symmetric turbulence distribution
+        cur_day_turb = 2*environment.turbulence_day *(1-abs((tmod-t_dayturb_mid)/(t_dayturb_start-t_dayturb_mid)));
+        turb = turb + cur_day_turb; 
     end
     
     %Step1b: Calc Total electric power for level flight
