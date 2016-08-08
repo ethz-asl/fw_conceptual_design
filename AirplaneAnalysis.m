@@ -103,7 +103,17 @@ for i = 1:numel(vars(3).values)
             if ~isempty(idx) ; plane.ExpPerf.P_prop_level = varval(idx); end
             
             %Execute simulation
-            [results(i,k,j), ~] = performanceEvaluator(params ,plane, environment, settings);
+            [results(i,k,j), flightdata(i,k,j)] = performanceEvaluator(params ,plane, environment, settings);
+            
+            useSolarTime=1;
+            if(useSolarTime)
+                results(i,k,j).t_eq2 = results(i,k,j).t_eq2 - 1.533*3600;
+                results(i,k,j).t_fullcharge = results(i,k,j).t_fullcharge - 1.533*3600;
+                results(i,k,j).t_sunrise = results(i,k,j).t_sunrise - 1.533*3600;
+                results(i,k,j).t_max = results(i,k,j).t_max - 1.533*3600;
+                results(i,k,j).t_sunset = results(i,k,j).t_sunset - 1.533*3600;
+                results(i,k,j).t_eq = results(i,k,j).t_eq - 1.533*3600;
+            end 
             
             completedRatio = ((i-1)*numel(vars(2).values)*numel(vars(1).values) + (k-1)*numel(vars(1).values) + j)/N;
             waitbar(completedRatio,h,[num2str(completedRatio*100.0,'Progress: %.0f\n') '%']);

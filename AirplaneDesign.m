@@ -141,6 +141,16 @@ for i = 1:numel(vars(3).values)
             [PerfResults(i,k,j),DesignResults(i,k,j),flightdata(i,k,j)] = ...
                evaluateSolution(plane,environment,params,settings);
            
+            useSolarTime=1;
+            if(useSolarTime)
+                PerfResults(i,k,j).t_eq2 = PerfResults(i,k,j).t_eq2 - 1.533*3600;
+                PerfResults(i,k,j).t_fullcharge = PerfResults(i,k,j).t_fullcharge - 1.533*3600;
+                PerfResults(i,k,j).t_sunrise = PerfResults(i,k,j).t_sunrise - 1.533*3600;
+                PerfResults(i,k,j).t_max = PerfResults(i,k,j).t_max - 1.533*3600;
+                PerfResults(i,k,j).t_sunset = PerfResults(i,k,j).t_sunset - 1.533*3600;
+                PerfResults(i,k,j).t_eq = PerfResults(i,k,j).t_eq - 1.533*3600;
+            end 
+           
             completedRatio = ((i-1)*numel(vars(2).values)*numel(vars(1).values) + (k-1)*numel(vars(1).values) + j)/N;
             waitbar(completedRatio,h,[num2str(completedRatio*100.0,'Progress: %.0f\n') '%']);
         end
