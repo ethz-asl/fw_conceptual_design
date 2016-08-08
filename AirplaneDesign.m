@@ -89,7 +89,8 @@ environment.turbulence = 0;
 environment.turbulence_day = 0.0;           % Relative increase of power consumption during the day, e.g. due to thermals
 environment.clearness = 1.0;
 environment.albedo = 0.12;
-environment.add_solar_timeshift = -3600;    % [s], due to Daylight Saving Time (DST)
+environment.add_solar_timeshift = -3600;    % [s], due to Daylight Saving Time (DST), actually used for solar income calculations
+environment.plot_solar_timeshift = -1.533;  % [h], just used for plotting results (to plot them in solar time), does not affect anything else
 
 %Evaluation settings
 settings.DEBUG = 0;                         % Force DEBUG mode
@@ -144,14 +145,13 @@ for i = 1:numel(vars(3).values)
             [PerfResults(i,k,j),DesignResults(i,k,j),flightdata(i,k,j)] = ...
                evaluateSolution(plane,environment,params,settings);
            
-            useSolarTime=1;
-            if(useSolarTime)
-                PerfResults(i,k,j).t_eq2 = PerfResults(i,k,j).t_eq2 - 1.533*3600;
-                PerfResults(i,k,j).t_fullcharge = PerfResults(i,k,j).t_fullcharge - 1.533*3600;
-                PerfResults(i,k,j).t_sunrise = PerfResults(i,k,j).t_sunrise - 1.533*3600;
-                PerfResults(i,k,j).t_max = PerfResults(i,k,j).t_max - 1.533*3600;
-                PerfResults(i,k,j).t_sunset = PerfResults(i,k,j).t_sunset - 1.533*3600;
-                PerfResults(i,k,j).t_eq = PerfResults(i,k,j).t_eq - 1.533*3600;
+            if(abs(environment.plot_solar_timeshift) > 0.01)
+                PerfResults(i,k,j).t_eq2 = PerfResults(i,k,j).t_eq2 + environment.plot_solar_timeshift * 3600;
+                PerfResults(i,k,j).t_fullcharge = PerfResults(i,k,j).t_fullcharge + environment.plot_solar_timeshift * 3600;
+                PerfResults(i,k,j).t_sunrise = PerfResults(i,k,j).t_sunrise + environment.plot_solar_timeshift * 3600;
+                PerfResults(i,k,j).t_max = PerfResults(i,k,j).t_max + environment.plot_solar_timeshift * 3600;
+                PerfResults(i,k,j).t_sunset = PerfResults(i,k,j).t_sunset + environment.plot_solar_timeshift * 3600;
+                PerfResults(i,k,j).t_eq = PerfResults(i,k,j).t_eq + environment.plot_solar_timeshift * 3600;
             end 
            
            str = [str sprintf('#%d| Set: b:%g m_bat:%g AR:%g   DoY=%g,Lat=%g,CLR=%g,Turb=%g   Res:Soc_min=%.2f%%,T_exc=%.2fh,T_cm=%.2fh,T_end=%.2fh   CharTimes:t_sr=%.2fh t_eq1=%.2fh t_fc=%.2fh t_fc90=NA t_eq2=%.2fh t_ss=%.2fh m=%.2f P=%.2f\n',ctr,...

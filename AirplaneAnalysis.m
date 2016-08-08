@@ -67,7 +67,8 @@ environment.turbulence = 0;                 % Only used if you do not specify th
 environment.turbulence_day = 0.0;%0.307;    % Relative increase of power consumption during the day, e.g. due to thermals
 environment.clearness = 1.0;                % Only used if you do not specify this as a VARIABLE above
 environment.albedo = 0.12;
-environment.add_solar_timeshift = -3600;    % [s], due to Daylight Saving Time (DST)
+environment.add_solar_timeshift = -3600;    % [s], due to Daylight Saving Time (DST), actually used for solar income calculations
+environment.plot_solar_timeshift = -1.533;  % [h], just used for plotting results (to plot them in solar time), does not affect anything else
 
 %Evaluation settings
 settings.DEBUG = 0;                         % Force DEBUG mode
@@ -115,14 +116,13 @@ for i = 1:numel(vars(3).values)
             %Execute simulation
             [results(i,k,j), flightdata(i,k,j)] = performanceEvaluator(params ,plane, environment, settings);
             
-            useSolarTime=1;
-            if(useSolarTime)
-                results(i,k,j).t_eq2 = results(i,k,j).t_eq2 - 1.533*3600;
-                results(i,k,j).t_fullcharge = results(i,k,j).t_fullcharge - 1.533*3600;
-                results(i,k,j).t_sunrise = results(i,k,j).t_sunrise - 1.533*3600;
-                results(i,k,j).t_max = results(i,k,j).t_max - 1.533*3600;
-                results(i,k,j).t_sunset = results(i,k,j).t_sunset - 1.533*3600;
-                results(i,k,j).t_eq = results(i,k,j).t_eq - 1.533*3600;
+            if(fabs(environment.plot_solar_timeshift) > 0.01)
+                PerfResults(i,k,j).t_eq2 = PerfResults(i,k,j).t_eq2 + environment.plot_solar_timeshift * 3600;
+                PerfResults(i,k,j).t_fullcharge = PerfResults(i,k,j).t_fullcharge + environment.plot_solar_timeshift * 3600;
+                PerfResults(i,k,j).t_sunrise = PerfResults(i,k,j).t_sunrise + environment.plot_solar_timeshift * 3600;
+                PerfResults(i,k,j).t_max = PerfResults(i,k,j).t_max + environment.plot_solar_timeshift * 3600;
+                PerfResults(i,k,j).t_sunset = PerfResults(i,k,j).t_sunset + environment.plot_solar_timeshift * 3600;
+                PerfResults(i,k,j).t_eq = PerfResults(i,k,j).t_eq + environment.plot_solar_timeshift * 3600;
             end 
             
             completedRatio = ((i-1)*numel(vars(2).values)*numel(vars(1).values) + (k-1)*numel(vars(1).values) + j)/N;
