@@ -138,3 +138,4 @@ display(str);
 % plots
 
 Plot_AirplaneAnalysis_Standard(results, vars);
+%Plot_AirplaneAnalysis_ASFinalPaper_PlotOrderChanged(results, [], environment, plane, params, flightdata, vars,1);

@@ -58,8 +58,8 @@ function [] = Plot_BasicSimulationTimePlot(flightdata,environment,params, plane)
     for i=numel(ax)-1:-1:1
         set(ax(i),'XTickLabel','');
     end
-    dcm_obj = datacursormode(figurehandle);
-    set(dcm_obj,'UpdateFcn',{@PlotPrecisionCallback});
+    %dcm_obj = datacursormode(figurehandle);
+    %set(dcm_obj,'UpdateFcn',{@PlotPrecisionCallback});
     linkaxes(ax,'x');
 end
 

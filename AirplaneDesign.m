@@ -178,5 +178,5 @@ display(str);
 % folder. Please modify and call these scripts if you want to modify the 
 % plots
 
-Plot_AirplaneDesign_ASFinalPaper(PerfResults, DesignResults, environment, plane, params, flightdata, vars);
-%Plot_AirplaneDesign_ASFinalPaper(PerfResults, DesignResults, environment, plane, params, flightdata, vars);
+Plot_AirplaneDesign_Standard(PerfResults, DesignResults, environment, plane, params, flightdata, vars);
+%Plot_AirplaneDesign_ASFinalPaper_PlotOrderChanged(PerfResults, DesignResults, environment, plane, params, flightdata, vars);
