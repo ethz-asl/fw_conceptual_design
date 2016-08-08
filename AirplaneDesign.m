@@ -35,29 +35,29 @@ addpath(genpath('matlab_functions'))
 % vars(1)= VAR.WING_SPAN;
 % vars(1).values = 3:1:5; %Analyse over wing spans from 3 to 5m in 1m steps
 
-%P1
+%Plot1
 vars(1) = VAR.WING_SPAN;
-vars(1).values = 3.5:0.1:6.5;
+vars(1).values = 3.5:1.0:6.5;
 vars(2) = VAR.BATTERY_MASS;
-vars(2).values = 1.0:0.1:7.0;
+vars(2).values = 2.5:1.0:6.5;
 vars(3) = VAR.ASPECT_RATIO;
 vars(3).values = 18.5;
 
-%P2
-% vars(1) = VAR.DAY_OF_YEAR; %VAR.BATTERY_MASS;
-% vars(1).values = floor(0*30.5):5:floor(11*30.5+29); %2.7:0.1:3.0;
-% vars(2) = VAR.LATITUDE; %VAR.WING_SPAN;
-% vars(2).values = 0:2.5:70; %5.4:0.1:5.8;
-% vars(3) = VAR.ASPECT_RATIO;
-% vars(3).values = 18.5;
-
-% P3
+% Plot3
 % vars(1) = VAR.CLEARNESS; %VAR.BATTERY_MASS;
-% vars(1).values = 0.4:0.025:1;
+% vars(1).values = 0.4:0.2:1;
 % vars(2) = VAR.TURBULENCE; %VAR.WING_SPAN;
-% vars(2).values = 0.0:0.025:0.6;; %5.4:0.1:5.8;
+% vars(2).values = 0.0:0.2:0.6; %5.4:0.1:5.8;
 % vars(3) = VAR.DAY_OF_YEAR;
 % vars(3).values = [floor(3*30.5+21), floor(5*30.5+21)];
+
+% Plot2
+% vars(1) = VAR.DAY_OF_YEAR; %VAR.BATTERY_MASS;
+% vars(1).values = [5*365/12+21 5*365/12+30 6*365/12+15];%floor(0*30.5):5:floor(11*30.5+29);
+% vars(2) = VAR.LATITUDE; 
+% vars(2).values = 47.6;%0:2.5:70;
+% vars(3) = VAR.ASPECT_RATIO;
+% vars(3).values = 18.5;
 
 % Airplane general technological parameters first
 initParameters;
@@ -72,8 +72,8 @@ plane.struct.AR = 18.5;
 plane.bat.m = 2.9;
 
 %This is the other plane-specific data. 
-plane.avionics.power = 5.5;
-plane.avionics.mass = 0.6;
+plane.avionics.power = 6.0;
+plane.avionics.mass = 1.20;
 plane.payload.power = 0;
 plane.payload.mass = 0.0;
 plane.prop.P_prop_max = 180.0;
@@ -81,10 +81,10 @@ plane.prop.P_prop_max = 180.0;
 % Set environment
 environment.dayofyear = 5*30.5+21;
 environment.lat = 47.6;                     % 1: Barcelona 2:Tuggen/CH
-environment.lon = 8.5;
+environment.lon = 8.53;
 environment.h_0 = 416+120;                  % with 120m AGL flight altitude for enough safety
-environment.h_max = 800;                   % Barcelona: 4000ft
-environment.T_ground = 25+271.15;
+environment.h_max = 700;                   % Barcelona: 4000ft
+environment.T_ground = 25+273.15;
 environment.turbulence = 0;
 environment.turbulence_day = 0.0;           % Relative increase of power consumption during the day, e.g. due to thermals
 environment.clearness = 1.0;
@@ -93,12 +93,12 @@ environment.add_solar_timeshift = -3600;    % [s], due to Daylight Saving Time (
 
 %Evaluation settings
 settings.DEBUG = 0;                         % Force DEBUG mode
-settings.dt = 200;                          % Discretization time interval [s]
+settings.dt = 100;                          % Discretization time interval [s]
 settings.climbAllowed = 0;
 settings.SimType = 0;                       % 0 = Start on t_eq, 1 = start on specified Initial Conditions
 settings.SimTimeDays = 2;                   % Simulation Time in days (e.g. 1 = std. 24h simulation)
 settings.InitCond.SoC = 0.46;               % State-of-charge [-]
-settings.InitCond.t = 9.0*3600 + 32*60;     % [s]launch time
+settings.InitCond.t = 4.0*3600 + 32*60;     % [s]launch time
 settings.evaluation.findalt = 0;            % if 1, it finds the maximum altitude for eternal flight
 %settings.optGRcruise       =  0;           % 1 to allow cruise at optimal glide ratio & speed when max altitude reached 
 settings.useAOI = 0;                        % 1 to enable the use of angle-of-incidence dependent solar module efficiency

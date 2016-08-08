@@ -15,22 +15,22 @@ clear params;
 %=== Propulsion Group =====================================================
 params.prop.k_prop          = 0.0011;   % Mass/Power [kg/W]
 params.prop.eta_ctrl        = 0.97;     % Eff. of motor controller [-]
-params.prop.eta_mot         = 0.8;      % Efficiency of motor [-]
-params.prop.eta_grb         = 0.97;     % Efficiency of gearbox [-]
-params.prop.eta_plr         = 0.78;     % Efficiency of propeller [-]
+params.prop.eta_mot         = 0.82;      % Efficiency of motor [-]
+params.prop.eta_grb         = 0.96;     % Efficiency of gearbox [-]
+params.prop.eta_plr         = 0.82;      % Efficiency of propeller [-]
 params.prop.eta_climb       = 0.5;      % Additional loss factor when climbing [-]
 params.prop.number          = 1;        % Number of propulsion units [-]
 
 %=== Battery and Step-down Converter ======================================
-params.bat.eta_chrg        = 0.95;     % Eff. of charge process [-]
-params.bat.eta_dchrg       = 0.95;     % Eff. of discharge process [-]
+params.bat.eta_chrg        = 0.95;     % Eff. of charge process [-]. Lower eta, because charge (during morning at strong sun) mostly happens quickly on solar UAVs.
+params.bat.eta_dchrg       = 0.97;     % Eff. of discharge process [-]. Higher eta, because discharge (during night) happens slower on solar UAVs.
 params.bat.eta_bec         = 0.65;     % Eff. of bec (5V stepdown) [-]
-params.bat.e_density       = 243*3600; % Energy density of battery including battery-cables sensors etc.
+params.bat.e_density       = 251*3600;      % 251.36*3600; % Energy density of battery including battery-cables sensors etc.
 params.bat.distr           = 1;        % Distributed battery mass? 1/0
 params.bat.chrg_lim_type   = 1;        % 0 = Don't use, 1=use theor. params below, 2 = use experimental charge limit curve
 params.bat.chrg_lim_SoC1   = 0.9;      % SoC [-] above which charge limiting applies
 params.bat.chrg_lim_Prel1  = 0.5;      % Maximum charge relative to battery capacity (i.e. in C's) when NOT limiting (i.e. below SoC1)
-params.bat.chrg_lim_Prel2  = 0.02;     % Specific charge termination power, i.e. P_chrg(SoC=100%) = chrg_lim_Prel2 * e_bat
+params.bat.chrg_lim_Prel2  = 0.046;    % Specific charge termination power, i.e. P_chrg(SoC=100%) = chrg_lim_Prel2 * e_bat.
 
 %=== Solar cells ==========================================================
 params.solar.k_sc           = 0.39;     % Mass density of sc [Kg/m2].

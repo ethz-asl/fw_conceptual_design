@@ -21,10 +21,19 @@ addpath(genpath('matlab_functions'))
 % VAR.CLEARNESS, VAR.TURBULENCE, VAR.LATITUDE, VAR.POWER (all which are dfined
 % in the file Var.m). If you only want to specify one or two variables, simply 
 % provide a constant value for the remaining (i.e. the second/third) one
+%P-Std
+% vars(1) = VAR.DAY_OF_YEAR;
+% vars(1).values = [5*365/12+21 5*365/12+30 6*365/12+15];%[5*30.4166+21 : 30.55/4 : 7*30.5+21;]
+% vars(2) = VAR.LATITUDE;
+% vars(2).values = 47.6;
+% vars(3) = VAR.TURBULENCE;
+% vars(3).values = 0;
+
+%P2
 vars(1) = VAR.DAY_OF_YEAR;
-vars(1).values = 5*30.5+30;%:5:round(6*30.5+26);
-vars(2) = VAR.CLEARNESS;
-vars(2).values = 1.0;%0.5:0.25:1;
+vars(1).values = [5*365/12+21:10:11*365/12+21];%[5*30.4166+21 : 30.55/4 : 7*30.5+21;]
+vars(2) = VAR.LATITUDE;
+vars(2).values = 0:30:90;
 vars(3) = VAR.TURBULENCE;
 vars(3).values = 0;
 
@@ -33,15 +42,16 @@ initParameters;
 params.bat.chrg_lim_type = 2;   % Enable charge limiting using experimental data
 
 %This is the plane-specific data
-plane.m_no_bat = 6.92-2.918;
+plane.payload.mass = 0.0;
+plane.bat.m = 2.918+0*0.293+0*0.04863;
+plane.m_no_bat = 6.92-2.918 + plane.payload.mass;
 plane.struct.b = 5.65;
 plane.struct.AR = 18.5;
-plane.bat.m = 2.918+0*0.293+0*0.04863;
 plane.m = plane.m_no_bat+plane.bat.m;
-plane.ExpPerf.m = plane.m_no_bat+plane.bat.m;    %
+plane.ExpPerf.m = 6.92;    %
 plane.ExpPerf.solar.surface = 88 * (0.125^2 - 4*70.36E-6);
-plane.ExpPerf.P_prop_level = 37;          %
-plane.ExpPerf.rho_P_prop_level = 1.095;     % Density at which power curve of aircraft was recorded
+plane.ExpPerf.P_prop_level = 35.8;          %
+plane.ExpPerf.rho_P_prop_level = 1.10;     % Density at which power curve of aircraft was recorded
 plane.avionics.power = 6.0;
 plane.payload.power = 0;
 plane.prop.P_prop_max = 180.0;
@@ -51,22 +61,22 @@ environment.dayofyear = 5*30.5+30;          % Only used if you do not specify th
 environment.lat = 47.6;                     % Rafz
 environment.lon = 8.53;
 environment.h_0 = 416+120;                  % with 120m AGL flight altitude for enough safety
-environment.h_max = 700;                   %
-environment.T_ground = 28+271.15;
-environment.turbulence = 0;
-environment.turbulence_day = 0.0;           % Relative increase of power consumption during the day, e.g. due to thermals
+environment.h_max = 700;
+environment.T_ground = 31.3+273.15;
+environment.turbulence = 0;                 % Only used if you do not specify this as a VARIABLE above
+environment.turbulence_day = 0.0;%0.307;    % Relative increase of power consumption during the day, e.g. due to thermals
 environment.clearness = 1.0;                % Only used if you do not specify this as a VARIABLE above
 environment.albedo = 0.12;
 environment.add_solar_timeshift = -3600;    % [s], due to Daylight Saving Time (DST)
 
 %Evaluation settings
 settings.DEBUG = 0;                         % Force DEBUG mode
-settings.dt = 200;                          % Discretization time interval [s]
-settings.climbAllowed = 1;
+settings.dt = 100;                          % Discretization time interval [s]
+settings.climbAllowed = 0;
 settings.SimType = 0;                       % 0 = Start on t_eq, 1 = start on specified Initial Conditions
 settings.SimTimeDays = 2;                   % Simulation Time in days (e.g. 1 = std. 24h simulation)
-settings.InitCond.SoC = 0.46;               % State-of-charge [-]
-settings.InitCond.t = 9.0*3600 + 32*60;     % [s]launch time
+settings.InitCond.SoC = 0.577;%0.46;               % State-of-charge [-]
+settings.InitCond.t = (11+14.0/60.0)*3600.0;%9.0*3600 + 32*60;     % [s]launch time
 settings.useAOI = 1;                        % 1 to enable the use of angle-of-incidence dependent solar module efficiency
 settings.useDirDiffRad = 1;                 % 1 to enable the use of separate diffuse and direct radiation solar module efficiencies
 
