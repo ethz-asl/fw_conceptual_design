@@ -90,11 +90,12 @@ end
 
 %Step 1c: Calc Total electric power for level flight
 if(exist('plane', 'var') && isfield(plane, 'ExpPerf') && isfield(plane.ExpPerf, 'P_prop_level'))
-    P_elec_level = plane.ExpPerf.P_prop_level * sqrt(plane.ExpPerf.rho_P_prop_level/rho) * (1.0+environment.turbulence);
+    P_elec_level = plane.ExpPerf.P_prop_level * (plane.m/plane.ExpPerf.m)^1.5 * sqrt(plane.ExpPerf.rho_P_prop_level/rho) * (1.0+environment.turbulence);
 else
     P_elec_level = CalcPFromPolars(plane, params, rho, mu) * (1.0+environment.turbulence);
 end
 P_elec_level_tot_nom = P_elec_level + plane.avionics.power + plane.payload.power; %This is the nominal (not instantaneous) total electric level-flight power
+results.P_elec_level_tot_nom = P_elec_level_tot_nom;
 
 %Step 1d: Find t_sunrise, i.e. when P_solar=0.
 while irr_vec(1) <= 0
@@ -255,7 +256,7 @@ while E_bat >=0 && h>=environment.h_0 && t<=t_sim_end
         h_before = h;
         
         if(exist('plane', 'var') && isfield(plane, 'ExpPerf') && isfield(plane.ExpPerf, 'P_prop_level'))
-            P_elec_level = plane.ExpPerf.P_prop_level * sqrt(plane.ExpPerf.rho_P_prop_level/rho) * (1.0 + turb);
+            P_elec_level = plane.ExpPerf.P_prop_level * (plane.m/plane.ExpPerf.m)^1.5 * sqrt(plane.ExpPerf.rho_P_prop_level/rho) * (1.0 + turb);
         else
             P_elec_level = CalcPFromPolars(plane, params, rho, mu) * (1.0 + turb);
         end
