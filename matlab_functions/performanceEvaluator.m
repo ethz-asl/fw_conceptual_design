@@ -385,9 +385,12 @@ if flags.eq_reached == 1
     if(flags.eq_always_exceeded)
         results.t_excess = Inf();
         results.min_SoC = 1;
-    elseif(t_end-24*3600 < results.t_eq)
+    %elseif(t_end-24*3600 < results.t_eq)
+    elseif(mod(t_end,86400) < results.t_eq || mod(t_end,86400) > results.t_eq2)
         % Case a) We have not made it through the night (negative t_exc !)
-        results.t_excess = (t_end-(24*3600+results.t_eq))/3600;
+        if(mod(t_end,86400) < results.t_eq) results.t_excess = (mod(t_end,86400)-results.t_eq) / 3600;
+        elseif(mod(t_end,86400) > results.t_eq2) results.t_excess = (mod(t_end,86400)-86400-results.t_eq) / 3600;
+        end
     else
         % Case b) We have made it through the night (positive t_exc!). We do 
         % extensive searches here to find not any but the correct (of  the 
@@ -406,7 +409,8 @@ if flags.eq_reached == 1
         % We do extensive searches here to find not any but the correct (of 
         % the last day) charge margin, so we basically do backwards search.
         idx_current = numel(flightdata.t_array);
-        idx_lastfullcharge_end = find(flightdata.bat_array == E_bat_max,1,'last');
+        idx_lastfullcharge_end = find((flightdata.bat_array == E_bat_max) & (flightdata.t_array > (settings.SimTimeDays-1)*86400),1,'last');
+        %if(flightdata.t_array(idx_lastfullcharge_end) < (settings.SimTimeDays-1)*86400) idx_lastfullcharge_end=[]; end;
         idx_lastteqbeforelastfullcharge = find(mod(flightdata.t_array(1:idx_lastfullcharge_end)-results.t_eq,86400) < Dt,1,'last');
         if(isempty(idx_lastteqbeforelastfullcharge)) idx_lastteqbeforelastfullcharge=1; end %Handle case of not t_eq before
         idx_lastfullcharge_start = idx_lastteqbeforelastfullcharge - 1 + find (flightdata.bat_array(idx_lastteqbeforelastfullcharge:idx_lastfullcharge_end) == E_bat_max,1,'first');
@@ -415,7 +419,7 @@ if flags.eq_reached == 1
             results.t_fullcharge=NaN;
         else
             results.t_fullcharge = mod(flightdata.t_array(idx_lastfullcharge_start),86400);
-            results.t_chargemargin = (flightdata.t_array(idx_lastfullcharge_end)-flightdata.t_array(idx_lastfullcharge_start))/3600.0;
+            results.t_chargemargin = (flightdata.t_array(idx_lastfullcharge_end+1)-flightdata.t_array(idx_lastfullcharge_start))/3600.0;
         end
     end
 end
@@ -424,7 +428,9 @@ end
 if (results.t_excess < 0 || isnan(results.t_excess))
     results.t_excess = 0;
     results.min_SoC = 0;
-    results.t_endurance = (t_end-t_start_full)/3600; %results.t_sunrise)/3600; %WRONG when defined as in [LeuteneggerJIRS]
+    if(settings.SimType==0) results.t_endurance = (t_end-t_start_full)/3600; %results.t_sunrise)/3600; %WRONG when defined as in [LeuteneggerJIRS]
+    elseif(settings.SimType==1) results.t_endurance = (t_end-settings.InitCond.t)/3600;
+    end
 end
 
 %---------------------------------------------------------------------
