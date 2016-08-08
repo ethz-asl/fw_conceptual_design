@@ -14,6 +14,12 @@ classdef VAR < handle
         CLEARNESS
         TURBULENCE
         POWER
+        PAYLOAD_POWER
+        PAYLOAD_MASS
+        eBAT
+        ETA_SM
+        ETA_PROP
+        MNOBAT
     end
     methods
        function r = name(obj)
@@ -35,6 +41,18 @@ classdef VAR < handle
              r = 'Atmospheric turbulence [-]';
          elseif(strcmp(char(obj),'POWER'))
              r = 'Level flight el. prop. power [W]';
+         elseif(strcmp(char(obj),'PAYLOAD_POWER'))
+             r = 'Payload power [W]';
+         elseif(strcmp(char(obj),'PAYLOAD_MASS'))
+             r = 'Payload mass [kg]';
+         elseif(strcmp(char(obj),'eBAT'))
+             r = 'Battery energy density [Wh/kg]';
+         elseif(strcmp(char(obj),'ETA_SM'))
+             r = 'Solar module efficiency [-]';
+         elseif(strcmp(char(obj),'ETA_PROP'))
+             r = 'Propulsion efficiency [-]';
+         elseif(strcmp(char(obj),'MNOBAT'))
+             r = 'Airplane dry mass [kg]';
          end
        end
        
@@ -57,6 +75,18 @@ classdef VAR < handle
              r = 'Turbulence';
          elseif(strcmp(char(obj),'POWER'))
              r = 'Level flight el. prop. power';
+         elseif(strcmp(char(obj),'PAYLOAD_POWER'))
+             r = 'Payload power';
+         elseif(strcmp(char(obj),'PAYLOAD_MASS'))
+             r = 'Payload mass';
+         elseif(strcmp(char(obj),'eBAT'))
+             r = 'Battery energy density';
+         elseif(strcmp(char(obj),'ETA_SM'))
+             r = 'Solar module efficiency';
+         elseif(strcmp(char(obj),'ETA_PROP'))
+             r = 'Propulsion efficiency';
+         elseif(strcmp(char(obj),'MNOBAT'))
+             r = 'Airplane dry mass';
          end
        end
     end
