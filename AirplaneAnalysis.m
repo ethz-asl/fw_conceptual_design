@@ -117,12 +117,12 @@ for i = 1:numel(vars(3).values)
             [results(i,k,j), flightdata(i,k,j)] = performanceEvaluator(params ,plane, environment, settings);
             
             if(fabs(environment.plot_solar_timeshift) > 0.01)
-                PerfResults(i,k,j).t_eq2 = PerfResults(i,k,j).t_eq2 + environment.plot_solar_timeshift * 3600;
-                PerfResults(i,k,j).t_fullcharge = PerfResults(i,k,j).t_fullcharge + environment.plot_solar_timeshift * 3600;
-                PerfResults(i,k,j).t_sunrise = PerfResults(i,k,j).t_sunrise + environment.plot_solar_timeshift * 3600;
-                PerfResults(i,k,j).t_max = PerfResults(i,k,j).t_max + environment.plot_solar_timeshift * 3600;
-                PerfResults(i,k,j).t_sunset = PerfResults(i,k,j).t_sunset + environment.plot_solar_timeshift * 3600;
-                PerfResults(i,k,j).t_eq = PerfResults(i,k,j).t_eq + environment.plot_solar_timeshift * 3600;
+                results(i,k,j).t_eq2 = results(i,k,j).t_eq2 + environment.plot_solar_timeshift * 3600;
+                results(i,k,j).t_fullcharge = results(i,k,j).t_fullcharge + environment.plot_solar_timeshift * 3600;
+                results(i,k,j).t_sunrise = results(i,k,j).t_sunrise + environment.plot_solar_timeshift * 3600;
+                results(i,k,j).t_max = results(i,k,j).t_max + environment.plot_solar_timeshift * 3600;
+                results(i,k,j).t_sunset = results(i,k,j).t_sunset + environment.plot_solar_timeshift * 3600;
+                results(i,k,j).t_eq = results(i,k,j).t_eq + environment.plot_solar_timeshift * 3600;
             end 
             
             completedRatio = ((i-1)*numel(vars(2).values)*numel(vars(1).values) + (k-1)*numel(vars(1).values) + j)/N;
