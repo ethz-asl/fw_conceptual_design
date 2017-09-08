@@ -224,6 +224,8 @@ while (rel_delta_m>0.001 && abs_delta_m>0.01 && iter<max_iter)
     if Re_d <= ReList(1)
         ReU=ReList(2);
         ReL=ReList(1);
+        i = 1 % Without this,'i' will stay at "size(ReList,2)-1". 
+              % And wingPolar{i} value needed for code right below, will not be correct.
     end
     if Re_d >= ReList(size(ReList,2))
         ReU=ReList(size(ReList,2));
@@ -272,6 +274,8 @@ while (rel_delta_m>0.001 && abs_delta_m>0.01 && iter<max_iter)
     if Re_m <= ReList(1)
         ReU=ReList(2);
         ReL=ReList(1);
+        i = 1 % Without this,'i' will stay at "size(ReList,2)-1". 
+              % And wingPolar{i} value needed for code right below, will not be correct.
     end
     if Re_m >= ReList(size(ReList,2))
         ReU=ReList(size(ReList,2));
@@ -413,7 +417,7 @@ while (rel_delta_m>0.001 && abs_delta_m>0.01 && iter<max_iter)
     % against buckling (refer to Hertel)
     t_f_wing_b = (sigma_max_times_t_f/(3.6*Q_lam_c(1,1,1))*(h_prof)^2*1.5)^(1/3);
     
-    % bending not more than 10°
+    % bending not more than 10Â°
     M_integral=max([abs(sum(Mbx_d_max*delta)),abs(sum(Mbx_d_min*delta)),...
         abs(sum(Mbx_rp*delta)),abs(sum(Mbx_rm*delta))]);
     t_f_wing_f = M_integral/(tan(10/180*pi)*Q_lam_c(1,1,1)*h_prof^3/2);
@@ -430,7 +434,7 @@ while (rel_delta_m>0.001 && abs_delta_m>0.01 && iter<max_iter)
         abs(cumsum(flipdim(T_m_min,1)));...
         abs(cumsum(flipdim(T_m_rp,1)));...
         abs(cumsum(flipdim(T_m_rm,1)))]));
-    %twist (max. 3° overall)
+    %twist (max. 3Â° overall)
     theta_t=max([max(abs(cumsum(flipdim(delta*T_m_max*s0/(4*(h_prof^2)^2*Q_mat_crfp(3,3)),2))));...
         max(abs(cumsum(flipdim(delta*T_m_min*s0/(4*(h_prof^2)^2*Q_mat_crfp(3,3)),2))));...
         max(abs(cumsum(flipdim(delta*T_m_rp*s0/(4*(h_prof^2)^2*Q_mat_crfp(3,3)),2))));...
@@ -516,7 +520,7 @@ while (rel_delta_m>0.001 && abs_delta_m>0.01 && iter<max_iter)
     t_r2sw_wing_b = D2r*0.4*h_prof*1.5/(3*4*Q_lam_c(1,1,1)*t_r2_wing^2)-t_r2_wing;
     t_r2sw_wing=max([t_r2sw_wing_s,t_r2sw_wing_b,t_core_min]); % no simplification, otherwise skin is hurt
     %leading and trailing edge against bending displacement max .1% of 0.3*c 
-    %45° orient. laminate
+    %45Â° orient. laminate
     loading_y_LE=0.0914/0.35*F1/(b/N);
     loading_x_LE=D1r/(b/N);
     loading_y_TE=(1-0.8675)/0.65*F1/(b/N);
@@ -795,7 +799,7 @@ while (rel_delta_m>0.001 && abs_delta_m>0.01 && iter<max_iter)
     end
     
     
-    % Fuselage: pull up and yaw (laminate orientation 0° helical angle)
+    % Fuselage: pull up and yaw (laminate orientation 0Â° helical angle)
     % -----------------------------------------------------------------
     delta_fus=L/N;
     y_fus=delta_fus/2:delta_fus:L-delta_fus/2;
@@ -820,7 +824,7 @@ while (rel_delta_m>0.001 && abs_delta_m>0.01 && iter<max_iter)
     % stress
     t_fus_s = 1.5*s_t/zul_c(1,1);
 
-    % max. 2° deflection
+    % max. 2Â° deflection
     t_fus_d=sum(delta_fus*Mb_fus/(pi*D^3/8)/(2/180*pi)/(Q_lam_c(1,1,1)));
 
     % bending buckling, 
