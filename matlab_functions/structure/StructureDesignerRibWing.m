@@ -337,7 +337,7 @@ while (rel_delta_m>0.001 && abs_delta_m>0.01 && iter<max_iter)
     %% inertia tensor recalculation
     Ixx=sum(Y.*Y*(m_distr/b*delta+wing_m_distr));
     for k=1:floor(n/2)
-        Ixx=Ixx+2*y(k*round(N/(n+1)))*y(k*round(N/(n+1)))*m_propulsion;
+        Ixx=Ixx+2*y(k*round(N/(n+1)))*y(k*round(N/(n+1)))*(m_propulsion/n); % Each unit's weight is Total divided by 'n'
     end
     Ixx=Ixx+(b_hor/4)^2*hor_m+(b_fin/2)^2*fin_m;
     Izz=Ixx+L^2*(hor_m+fin_m)+(L/2)^2*fus_m;
