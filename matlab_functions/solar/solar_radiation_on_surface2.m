@@ -24,7 +24,7 @@
 %     ts0 is time in seconds
 %     day is the day of year (1 = January 1st)
 %     latitude in degrees, north = positive
-%     longitude in degrees, 0° = Prime Meridian (Greenwich), postive = east
+%     longitude in degrees, 0Â° = Prime Meridian (Greenwich), postive = east
 %     altitude in meters
 %     albedo, from 0 to 1
 %        typically albedo is 
@@ -111,9 +111,9 @@ et=(0.0072*cos(da)-0.0528*cos(2*da)-0.0012*cos(3*da)...
 
 %%%%%%%%%%%%%%%%%%%%%%%%
 % time difference and other constants
-tdiff=3600*(timezone-longitude/15)-day*86400;%+et; do not consider et, user enters sideral time
-tsSol0=ts0+tdiff; % solar times, one day range 
-
+%tdiff=3600*(timezone-longitude/15)-day*86400;%+et; do not consider et, user enters sideral time
+%tsSol0=ts0+tdiff; % solar times, one day range 
+tsSol0 = t+(longitude/15-timezone)*3600; % Calculate User's local Time At Local noon, it will be 43200. [Junwoo]
 
 
 %%%%%%%%%%%%%%%%%%%%%%
