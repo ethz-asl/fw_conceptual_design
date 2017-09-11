@@ -865,7 +865,7 @@ while (rel_delta_m>0.001 && abs_delta_m>0.01 && iter<max_iter)
         +1.15*ceil(b_hor/(0.3*c_hor))*(0.65*c_hor-(1-0.8675)*c_hor-h_prof_hor/2)*h_prof_hor*0.4*(t_r2_hor*rho_mat(1)+t_r2sw_hor*rho_mat(5)));
     fus_m=damping*fus_m+(1-damping)*correction_factor*(1.2*L*D*pi*t_fus*rho_mat(2));
     m_struct_new=fus_m+hor_m+fin_m+2*sum(wing_m_distr);
-    m_tot_new=m_struct+m_distr+m_pld+m_propulsion;
+    m_tot_new=m_struct_new+m_distr+m_pld+m_propulsion;
     rel_delta_m=abs(1-m_struct_new/m_struct);
     abs_delta_m=abs(m_struct_new-m_struct);
     rd=1-m_struct_new/m_struct;
