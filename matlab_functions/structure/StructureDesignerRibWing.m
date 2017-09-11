@@ -105,7 +105,7 @@ c_angle = (20-b*0.18)/180*pi;
 v_cn = sqrt((m_struct+m_distr+m_pld)*g/(0.5*rho*A*0.8)); 
 P_needed=v_cn*(m_struct+m_distr+m_pld)*g*sin(c_angle)...
     +sqrt((m_struct+m_distr+m_pld*g)^3/(0.5*rho*A))/20;
-m_propulsion = P_needed/n_propulsion*k_prop;% all motors!
+m_propulsion = P_needed*k_prop;% all motors!
 
 % and now the total
 m_tot = m_struct+m_distr+m_pld+m_propulsion;
