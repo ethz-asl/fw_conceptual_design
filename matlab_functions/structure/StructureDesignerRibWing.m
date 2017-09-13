@@ -105,7 +105,7 @@ c_angle = (20-b*0.18)/180*pi;
 v_cn = sqrt((m_struct+m_distr+m_pld)*g/(0.5*rho*A*0.8)); 
 P_needed=v_cn*(m_struct+m_distr+m_pld)*g*sin(c_angle)...
     +sqrt((m_struct+m_distr+m_pld*g)^3/(0.5*rho*A))/20;
-m_propulsion = P_needed*k_prop;% all motors!
+m_propulsion = P_needed/n_propulsion*k_prop;% all motors! % n_propulsion is Efficiency of Propulsion.
 
 % and now the total
 m_tot = m_struct+m_distr+m_pld+m_propulsion;
@@ -368,7 +368,7 @@ while (rel_delta_m>0.001 && abs_delta_m>0.01 && iter<max_iter)
     fz_rm=-0.5*rho*v_m^2*c*delta*c_l_m_rm...
          +n_loc_m'.*(g*(m_distr/b*delta+wing_m_distr));
     for k=1:floor(n/2)
-        fz_rm(k*round(N/(n+1)))=fz_rp(k*round(N/(n+1)))...
+        fz_rm(k*round(N/(n+1)))=fz_rm(k*round(N/(n+1)))...
             +m_propulsion/n*n_loc_m(k*round(N/(n+1)))*g;
     end
     fx_rp=0.5*rho*v_m^2*c*delta*c_d_m_rp;
