@@ -16,7 +16,7 @@
 % plane         airplane characteristics  
 % environment:  environmental conditions 
 %   .lat        latitude [deg]
-%   .T_ground   temperature on the ground [°K]
+%   .T_ground   temperature on the ground [Â°K]
 %   .day        day of the month
 %   .month      month of the year
 %   .clearness  clearness of the sky [-]
@@ -283,47 +283,24 @@ while E_bat >=0 && h>=environment.h_0 && t<=t_sim_end
     % -------------------------------------------------------------------
     % TODO for future: This can probably be simplified a lot. 
 
-    if(E_bat >= E_bat_max) %fully charged! ->dayflight=> level flight/climb
-
-        %Case 1: Already above h_0, i.e. in climbing or descending flight
-        if(h > environment.h_0)
-            %CONTROL-LAW: Put P_prop=0 only when P_Solar<P_0
-            if(P_solar >= (plane.avionics.power+plane.payload.power))
-                if(h < environment.h_max)
-                    P_prop = P_solar - plane.avionics.power - plane.payload.power;
-                elseif(h == environment.h_max)
-                    if(P_solar >= P_elec_level_tot)
-                        %Standard control: Only give level power
-                        P_prop = P_elec_level;
-%                             %Not implemented anymore                            
-%                             if(params.optGRcruise==1) 
-%                                 [vtmp,Retmp,CLtmp,CDtmp]=CalcFlightPars_OptCruise((P_solar-P_0)*n_propulsion,P_level,m_wo_bat+bat.m,rho,mu,A_wing,A_wing/b,g,polar,OptCruisePars);
-%                                 if(isnan(Retmp)==0) %because CalcFlightPars can fail when P_prop->P_level due to inaccuracies in the interpolation 
-%                                     v=vtmp;Re=Retmp;CL=CLtmp;CD=CDtmp;
-%                                     P_prop=P_solar-P_0; %Max. Power Cruise at level flight
-%                                 end
-%                             end
-                    else
-                        %Start sinking cause not enough solar energy for level flight
-                        P_prop = P_solar - plane.avionics.power - plane.payload.power;
-                    end
-                end 
-            else
-                P_prop=0;
-            end
-        %Case 2: At h_0, i.e. begin climb now or stay    
-        else
-            P_prop = P_elec_level + settings.climbAllowed * max(0,P_solar-P_elec_level-plane.avionics.power-plane.payload.power);
-        end
-    else
-        %Case 3: Above std-altitude: Sinking with propeller power=0->u=-Plevel...
-        if h > environment.h_0
-            P_prop = 0;
-        %Case 4: At std-altitude: charge battery only OR do level flight at night!    
-        else
-            P_prop = P_elec_level;
-        end
-    end
+    extraP = P_solar - P_elec_level - plane.avionics.power - plane.payload.power;
+    if(E_bat >= E_bat_max)
+        if(extraP >= 0 && h < environment.h_max) % Enough Power, Not Maximum Altitude
+             P_prop = settings.climbAllowed * extraP + P_elec_level;
+        elseif(extraP >= 0 && h >= environment.h_max) % Enough Power, Maximum Altitude
+             P_prop = P_elec_level;
+        elseif(extraP < 0 && h > environment.h_0) % Not Enough Power, Higher than Needed
+             P_prop = max( 0 , P_elec_level + extraP );
+        elseif(extraP < 0 && h <= environment.h_0) % Not Enough Power, Lower than Needed
+             P_prop = P_elec_level;
+     end
+ else
+     if(h>environment.h_0) % Not Fully Charged, Altitude Higher than Needed
+         P_prop = 0;
+     else % Not Fully Charged, Altitude Lower than Needed
+         P_prop = P_elec_level;
+      end
+  end
 
     % -------------------------------------------------------------------
     % STEP 3c: STATE PROPAGATION
