@@ -16,7 +16,7 @@
 % plane         airplane characteristics  
 % environment:  environmental conditions 
 %   .lat        latitude [deg]
-%   .T_ground   temperature on the ground [°K]
+%   .T_ground   temperature on the ground [Â°K]
 %   .day        day of the month
 %   .month      month of the year
 %   .clearness  clearness of the sky [-]
@@ -281,8 +281,8 @@ while E_bat >=0 && h>=environment.h_0 && t<=t_sim_end
     % -------------------------------------------------------------------
     % STEP 3b: CONTROL LAW. P_prop is the only control input.
     % -------------------------------------------------------------------
-    % TODO for future: This can probably be simplified a lot. 
-
+    % TODO for future: This can probably be simplified a lot.
+    
     if(E_bat >= E_bat_max) %fully charged! ->dayflight=> level flight/climb
 
         %Case 1: Already above h_0, i.e. in climbing or descending flight
@@ -324,6 +324,16 @@ while E_bat >=0 && h>=environment.h_0 && t<=t_sim_end
             P_prop = P_elec_level;
         end
     end
+
+    
+    %  %Not implemented anymore (For : Enough Power, Maximum Altitude)                           
+    %  if(params.optGRcruise==1) 
+    %  [vtmp,Retmp,CLtmp,CDtmp]=CalcFlightPars_OptCruise((P_solar-P_0)*n_propulsion,P_level,m_wo_bat+bat.m,rho,mu,A_wing,A_wing/b,g,polar,OptCruisePars);
+    %  if(isnan(Retmp)==0) %because CalcFlightPars can fail when P_prop->P_level due to inaccuracies in the interpolation 
+    %  v=vtmp;Re=Retmp;CL=CLtmp;CD=CDtmp;
+    %  P_prop=P_solar-P_0; %Max. Power Cruise at level flight
+    %  end
+    %  end
 
     % -------------------------------------------------------------------
     % STEP 3c: STATE PROPAGATION

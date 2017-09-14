@@ -16,8 +16,8 @@ function [ P_elec_level ] = CalcPFromPolars( plane, params, rho, mu)
             return;
         end
         v_old = v;
-        CL = interp1(log(plane.polar.ReList),plane.polar.c_L_cn,log(Re));
-        v = sqrt((plane.m_no_bat+plane.bat.m)*params.physics.g/(0.5*rho*A_wing*CL)); % logarithmic interp.
+        CL = interp1(log(plane.polar.ReList),plane.polar.c_L_cn,log(Re)); % logarithmic interp.
+        v = sqrt((plane.m_no_bat+plane.bat.m)*params.physics.g/(0.5*rho*A_wing*CL)); 
         delta_v=(v-v_old)/v;
     end
     CD = interp1(log(plane.polar.ReList),plane.polar.c_D_cn,log(Re));

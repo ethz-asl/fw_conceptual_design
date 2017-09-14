@@ -105,7 +105,7 @@ c_angle = (20-b*0.18)/180*pi;
 v_cn = sqrt((m_struct+m_distr+m_pld)*g/(0.5*rho*A*0.8)); 
 P_needed=v_cn*(m_struct+m_distr+m_pld)*g*sin(c_angle)...
     +sqrt((m_struct+m_distr+m_pld*g)^3/(0.5*rho*A))/20;
-m_propulsion = P_needed/n_propulsion*k_prop;% all motors!
+m_propulsion = P_needed/n_propulsion*k_prop;% all motors! % n_propulsion is Efficiency of Propulsion.
 
 % and now the total
 m_tot = m_struct+m_distr+m_pld+m_propulsion;
@@ -224,6 +224,8 @@ while (rel_delta_m>0.001 && abs_delta_m>0.01 && iter<max_iter)
     if Re_d <= ReList(1)
         ReU=ReList(2);
         ReL=ReList(1);
+        i = 1 % Without this,'i' will stay at "size(ReList,2)-1". 
+              % And wingPolar{i} value needed for code right below, will not be correct.
     end
     if Re_d >= ReList(size(ReList,2))
         ReU=ReList(size(ReList,2));
@@ -272,6 +274,8 @@ while (rel_delta_m>0.001 && abs_delta_m>0.01 && iter<max_iter)
     if Re_m <= ReList(1)
         ReU=ReList(2);
         ReL=ReList(1);
+        i = 1 % Without this,'i' will stay at "size(ReList,2)-1". 
+              % And wingPolar{i} value needed for code right below, will not be correct.
     end
     if Re_m >= ReList(size(ReList,2))
         ReU=ReList(size(ReList,2));
@@ -333,7 +337,7 @@ while (rel_delta_m>0.001 && abs_delta_m>0.01 && iter<max_iter)
     %% inertia tensor recalculation
     Ixx=sum(Y.*Y*(m_distr/b*delta+wing_m_distr));
     for k=1:floor(n/2)
-        Ixx=Ixx+2*y(k*round(N/(n+1)))*y(k*round(N/(n+1)))*m_propulsion;
+        Ixx=Ixx+2*y(k*round(N/(n+1)))*y(k*round(N/(n+1)))*(m_propulsion/n); % Each unit's weight is Total divided by 'n'
     end
     Ixx=Ixx+(b_hor/4)^2*hor_m+(b_fin/2)^2*fin_m;
     Izz=Ixx+L^2*(hor_m+fin_m)+(L/2)^2*fus_m;
@@ -364,7 +368,7 @@ while (rel_delta_m>0.001 && abs_delta_m>0.01 && iter<max_iter)
     fz_rm=-0.5*rho*v_m^2*c*delta*c_l_m_rm...
          +n_loc_m'.*(g*(m_distr/b*delta+wing_m_distr));
     for k=1:floor(n/2)
-        fz_rp(k*round(N/(n+1)))=fz_rp(k*round(N/(n+1)))...
+        fz_rm(k*round(N/(n+1)))=fz_rm(k*round(N/(n+1)))...
             +m_propulsion/n*n_loc_m(k*round(N/(n+1)))*g;
     end
     fx_rp=0.5*rho*v_m^2*c*delta*c_d_m_rp;
@@ -375,8 +379,9 @@ while (rel_delta_m>0.001 && abs_delta_m>0.01 && iter<max_iter)
     Mbz_rm=Y*fx_rm;
 
     % maximum load factors -> at v_d
+    % Max/Min Forces at v_d [Junwoo]
     fz_d_min=0.5*rho*v_d^2*c*delta*...
-         (-cos(alpha_m_min).*c_l_d_min-sin(alpha_d_min).*c_d_d_min)...
+         (-cos(alpha_d_min).*c_l_d_min-sin(alpha_d_min).*c_d_d_min)...
          +n_min_d*g*(m_distr/b*delta+wing_m_distr);
     for k=1:floor(n/2)
         fz_d_min(k*round(N/(n+1)))=fz_d_min(k*round(N/(n+1)))...
@@ -384,8 +389,9 @@ while (rel_delta_m>0.001 && abs_delta_m>0.01 && iter<max_iter)
     end
     fx_d_min=0.5*rho*v_d^2*c*delta*...
          (sin(alpha_d_min).*c_l_d_min-cos(alpha_d_min).*c_d_d_min);
+         
     fz_d_max=0.5*rho*v_d^2*c*delta*...
-         (-cos(alpha_m_max).*c_l_d_max-sin(alpha_d_max).*c_d_d_max)...
+         (-cos(alpha_d_max).*c_l_d_max-sin(alpha_d_max).*c_d_d_max)...
          +n_max_d*g*(m_distr/b*delta+wing_m_distr);
     for k=1:floor(n/2)
         fz_d_max(k*round(N/(n+1)))=fz_d_max(k*round(N/(n+1)))...
@@ -393,6 +399,7 @@ while (rel_delta_m>0.001 && abs_delta_m>0.01 && iter<max_iter)
     end
     fx_d_max=0.5*rho*v_d^2*c*delta*...
          (sin(alpha_d_max).*c_l_d_max-cos(alpha_d_max).*c_d_d_max);
+         
     Mbx_d_min=Y*fz_d_min;
     Mbz_d_min=Y*fx_d_min;
     Mbx_d_max=Y*fz_d_max;
@@ -413,7 +420,7 @@ while (rel_delta_m>0.001 && abs_delta_m>0.01 && iter<max_iter)
     % against buckling (refer to Hertel)
     t_f_wing_b = (sigma_max_times_t_f/(3.6*Q_lam_c(1,1,1))*(h_prof)^2*1.5)^(1/3);
     
-    % bending not more than 10°
+    % bending not more than 10Â°
     M_integral=max([abs(sum(Mbx_d_max*delta)),abs(sum(Mbx_d_min*delta)),...
         abs(sum(Mbx_rp*delta)),abs(sum(Mbx_rm*delta))]);
     t_f_wing_f = M_integral/(tan(10/180*pi)*Q_lam_c(1,1,1)*h_prof^3/2);
@@ -430,7 +437,7 @@ while (rel_delta_m>0.001 && abs_delta_m>0.01 && iter<max_iter)
         abs(cumsum(flipdim(T_m_min,1)));...
         abs(cumsum(flipdim(T_m_rp,1)));...
         abs(cumsum(flipdim(T_m_rm,1)))]));
-    %twist (max. 3° overall)
+    %twist (max. 3Â° overall)
     theta_t=max([max(abs(cumsum(flipdim(delta*T_m_max*s0/(4*(h_prof^2)^2*Q_mat_crfp(3,3)),2))));...
         max(abs(cumsum(flipdim(delta*T_m_min*s0/(4*(h_prof^2)^2*Q_mat_crfp(3,3)),2))));...
         max(abs(cumsum(flipdim(delta*T_m_rp*s0/(4*(h_prof^2)^2*Q_mat_crfp(3,3)),2))));...
@@ -516,7 +523,7 @@ while (rel_delta_m>0.001 && abs_delta_m>0.01 && iter<max_iter)
     t_r2sw_wing_b = D2r*0.4*h_prof*1.5/(3*4*Q_lam_c(1,1,1)*t_r2_wing^2)-t_r2_wing;
     t_r2sw_wing=max([t_r2sw_wing_s,t_r2sw_wing_b,t_core_min]); % no simplification, otherwise skin is hurt
     %leading and trailing edge against bending displacement max .1% of 0.3*c 
-    %45° orient. laminate
+    %45Â° orient. laminate
     loading_y_LE=0.0914/0.35*F1/(b/N);
     loading_x_LE=D1r/(b/N);
     loading_y_TE=(1-0.8675)/0.65*F1/(b/N);
@@ -795,7 +802,7 @@ while (rel_delta_m>0.001 && abs_delta_m>0.01 && iter<max_iter)
     end
     
     
-    % Fuselage: pull up and yaw (laminate orientation 0° helical angle)
+    % Fuselage: pull up and yaw (laminate orientation 0Â° helical angle)
     % -----------------------------------------------------------------
     delta_fus=L/N;
     y_fus=delta_fus/2:delta_fus:L-delta_fus/2;
@@ -820,7 +827,7 @@ while (rel_delta_m>0.001 && abs_delta_m>0.01 && iter<max_iter)
     % stress
     t_fus_s = 1.5*s_t/zul_c(1,1);
 
-    % max. 2° deflection
+    % max. 2Â° deflection
     t_fus_d=sum(delta_fus*Mb_fus/(pi*D^3/8)/(2/180*pi)/(Q_lam_c(1,1,1)));
 
     % bending buckling, 
@@ -834,12 +841,12 @@ while (rel_delta_m>0.001 && abs_delta_m>0.01 && iter<max_iter)
     %% recalculate mass distribution
     damping=0.4;
     % wing mass distr
-    wing_m_distr =damping*wing_m_distr + (1-damping)*correction_factor*(1.2*ones(size(y,2),1)*delta*(...
+    wing_m_distr =damping*wing_m_distr + (1-damping)*correction_factor*1.2*ones(size(y,2),1)*delta*(...
         rho_mat(6)*t_skin_wing*s0*c...
         +2*h_prof*t_f_wing*rho_mat(1)...
         +4*h_prof*t_sp_wing*rho_mat(1) + 4*h_prof*t_spsw_wing*rho_mat(5)...
         +s0_LE*c*(t_LE_wing*rho_mat(mat_LE_wing)+t_LEsw_wing*rho_mat(5))...
-        +s0_TE*c*(t_TE_wing*rho_mat(mat_TE_wing))+t_TEsw_wing*rho_mat(5))...
+        +s0_TE*c*(t_TE_wing*rho_mat(mat_TE_wing)+t_TEsw_wing*rho_mat(5))...
         +1.2*(N+1)/(N)*(0.35*c-0.0914*c-h_prof/2)*h_prof*0.7*(t_r1_wing*rho_mat(1)+t_r1sw_wing*rho_mat(5))...
         +1.2*(N+1)/(N)*(0.65*c-(1-0.8675)*c-h_prof/2)*h_prof*0.4*(t_r2_wing*rho_mat(1)+t_r2sw_wing*rho_mat(5)));
     fin_m =damping*fin_m+(1-damping)*correction_factor*(1.2*b_fin*(...
@@ -858,7 +865,7 @@ while (rel_delta_m>0.001 && abs_delta_m>0.01 && iter<max_iter)
         +1.15*ceil(b_hor/(0.3*c_hor))*(0.65*c_hor-(1-0.8675)*c_hor-h_prof_hor/2)*h_prof_hor*0.4*(t_r2_hor*rho_mat(1)+t_r2sw_hor*rho_mat(5)));
     fus_m=damping*fus_m+(1-damping)*correction_factor*(1.2*L*D*pi*t_fus*rho_mat(2));
     m_struct_new=fus_m+hor_m+fin_m+2*sum(wing_m_distr);
-    m_tot_new=m_struct+m_distr+m_pld+m_propulsion;
+    m_tot_new=m_struct_new+m_distr+m_pld+m_propulsion;
     rel_delta_m=abs(1-m_struct_new/m_struct);
     abs_delta_m=abs(m_struct_new-m_struct);
     rd=1-m_struct_new/m_struct;

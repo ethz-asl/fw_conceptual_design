@@ -27,11 +27,11 @@ function [] = Plot_BasicSimulationTimePlot(flightdata,environment,params, plane)
     ax(end+1)=subplot_tight(5,1,2,[plotmargins.vert plotmargins.horiz]);
     plot(time, flightdata.irr_array(3,:) * 180 / pi());
     ylabel('Angles');
-    legend('Sun incidence angle [°]');
+    legend('Sun incidence angle [Â°]');
     
     % Battery state
     subplot_tight(5,1,3,[plotmargins.vert plotmargins.horiz]);
-    E_bat_max = plane.bat.m * params.bat.e_density;
+    E_bat_max = flightdata.m_bat * params.bat.e_density;
     [ax(end+1:end+2),~,~] = plotyy(time, flightdata.bat_array/E_bat_max, time, flightdata.bat_array/3600);
     ylabel('Battery Charge State');
     legend('Battery SoC[%]','Battery Energy [Wh]');
