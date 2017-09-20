@@ -202,7 +202,7 @@ while (rel_delta_m>0.001 && abs_delta_m>0.01 && iter<max_iter)
     end
     c_angle = (20-b*0.18)/180*pi;
     P_needed=v_cn*m_tot*g*sin(c_angle)...
-        +sqrt((m_tot*g)^3/(0.5*rho*A))/interp1(log(ReList),cn_max,log(Re));
+        +sqrt((m_tot*g)^3/(0.5*rho*A))/interp1(log(ReList),cn_max,log(Re_cn));
     m_propulsion = P_needed/n_propulsion*k_prop;% all motors!
     
     % At v_d and v_m
