@@ -224,7 +224,7 @@ while (rel_delta_m>0.001 && abs_delta_m>0.01 && iter<max_iter)
     if Re_d <= ReList(1)
         ReU=ReList(2);
         ReL=ReList(1);
-        i = 1 % Without this,'i' will stay at "size(ReList,2)-1". 
+        i = 1; % Without this,'i' will stay at "size(ReList,2)-1". 
               % And wingPolar{i} value needed for code right below, will not be correct.
     end
     if Re_d >= ReList(size(ReList,2))
@@ -274,7 +274,7 @@ while (rel_delta_m>0.001 && abs_delta_m>0.01 && iter<max_iter)
     if Re_m <= ReList(1)
         ReU=ReList(2);
         ReL=ReList(1);
-        i = 1 % Without this,'i' will stay at "size(ReList,2)-1". 
+        i = 1; % Without this,'i' will stay at "size(ReList,2)-1". 
               % And wingPolar{i} value needed for code right below, will not be correct.
     end
     if Re_m >= ReList(size(ReList,2))
