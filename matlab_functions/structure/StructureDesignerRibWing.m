@@ -335,7 +335,7 @@ while (rel_delta_m>0.001 && abs_delta_m>0.01 && iter<max_iter)
         wingPolarm20(4)*ones(1,size(y,2)-floor(size(y,2)/2))]';
 
     %% inertia tensor recalculation
-    Ixx=sum(Y.*Y*(m_distr/b*delta+wing_m_distr));
+    Ixx=y.*y*(m_distr/b*delta+wing_m_distr);
     for k=1:floor(n/2)
         Ixx=Ixx+2*y(k*round(N/(n+1)))*y(k*round(N/(n+1)))*(m_propulsion/n); % Each unit's weight is Total divided by 'n'
     end
