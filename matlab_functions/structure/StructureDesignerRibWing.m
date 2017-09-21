@@ -261,7 +261,7 @@ while (rel_delta_m>0.001 && abs_delta_m>0.01 && iter<max_iter)
     c_m_d_min=c_m_d_min_L+r*(c_m_d_min_U-c_m_d_min_L);
 
     % v_m
-    Re_m=rho*v_m*c/mu;
+    Re_m=min([rho*c*v_m/mu,ReList(length(ReList))]);
     ReU=0;
     ReL=0;
     for i=1:size(ReList,2)-1
