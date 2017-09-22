@@ -584,7 +584,7 @@ while (rel_delta_m>0.001 && abs_delta_m>0.01 && iter<max_iter)
     Fz=tailPolarp30(2)*b_hor*c_hor*0.5*rho*v_m^2;
     theta_dd=Fz*L/Iyy;
     n_hor=1-theta_dd*L/g;
-    Mbx_hor=1/2/2*b_hor*hor_m*n_hor*g-1/2/2*tailPolarp30(2)*b_hor*c_hor*0.5*rho*v_m^2;
+    Mbx_hor=1/2*(b_hor/2)*hor_m*n_hor*g-1/2*(b_hor/2)*tailPolarp30(2)*b_hor*c_hor*0.5*rho*v_m^2;
     Q_hor=hor_m*n_hor*g-tailPolarp30(2)*b_hor*c_hor*0.5*rho*v_m^2/2;
     T_hor=b_hor/2*tailPolarp30(4)*b_hor*c_hor*c_hor*0.5*rho*v_m^2/2+0.1*c_hor*tailPolarp30(2)*b_hor*c_hor*0.5*rho*v_m^2/2;
     % flanges against stress
