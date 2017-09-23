@@ -836,7 +836,7 @@ while (rel_delta_m>0.001 && abs_delta_m>0.01 && iter<max_iter)
 
     t_fus_b=sqrt(1.5*s_t/(0.3*Q_lam_c(1,1,1))*(D/2));
     
-    t_fus=max([t_cfrp_min,t_fus_b,t_fus_d]);
+    t_fus=max([t_cfrp_min,t_fus_b,t_fus_d,t_fus_s]);
     
     %% recalculate mass distribution
     damping=0.4;
