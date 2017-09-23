@@ -876,6 +876,7 @@ while (rel_delta_m>0.001 && abs_delta_m>0.01 && iter<max_iter)
         m_struct=(m_struct+m_struct_new)/2;
         break;
     end
+    rd_last = rd;
     m_tot=(m_tot_new);
     %disp(m_struct);
     m_struct=(m_struct_new);
