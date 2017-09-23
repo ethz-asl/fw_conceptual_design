@@ -695,9 +695,9 @@ while (rel_delta_m>0.001 && abs_delta_m>0.01 && iter<max_iter)
     Fy=tailPolarp30(2)*b_fin*c_fin*0.5*rho*v_m^2;
     psi_dd=Fy*L/Izz;
     n_fin=psi_dd*L/g;
-    Mbx_fin=-1/2*b_fin*fin_m*n_fin*g+1/2*tailPolarp30(2)*b_fin*c_fin*0.5*rho*v_m^2;
+    Mbx_fin=-(b_fin/4)*(fin_m/2)*n_fin*g + (b_fin/4)*(0.5)*tailPolarp30(2)*b_fin*c_fin*0.5*rho*v_m^2;
     Q_fin=-fin_m*n_fin*g+tailPolarp30(2)*b_fin*c_fin*0.5*rho*v_m^2;
-    T_fin=b_fin*tailPolarp30(4)*b_fin*c_fin*c_fin*0.5*rho*v_m^2+0.1*c_fin*tailPolarp30(2)*b_fin*c_fin*0.5*rho*v_m^2;
+    T_fin=tailPolarp30(4)*b_fin*c_fin*c_fin*0.5*rho*v_m^2 + 0.1*c_fin*tailPolarp30(2)*b_fin*c_fin*0.5*rho*v_m^2;
     % flanges against stress
     t_f_fin_s = abs(Mbx_fin)/(2*h_prof_fin*h_prof_fin)/zul_c(2,1)*1.5;
     % flanges against buckling (refer to Hertel)
