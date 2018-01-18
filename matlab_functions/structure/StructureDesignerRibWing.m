@@ -202,7 +202,7 @@ while (rel_delta_m>0.001 && abs_delta_m>0.01 && iter<max_iter)
     end
     c_angle = (20-b*0.18)/180*pi;
     P_needed=v_cn*m_tot*g*sin(c_angle)...
-        +sqrt((m_tot*g)^3/(0.5*rho*A))/interp1(log(ReList),cn_max,log(Re));
+        +sqrt((m_tot*g)^3/(0.5*rho*A))/interp1(log(ReList),cn_max,log(Re_cn));
     m_propulsion = P_needed/n_propulsion*k_prop;% all motors!
     
     % At v_d and v_m
@@ -224,7 +224,7 @@ while (rel_delta_m>0.001 && abs_delta_m>0.01 && iter<max_iter)
     if Re_d <= ReList(1)
         ReU=ReList(2);
         ReL=ReList(1);
-        i = 1 % Without this,'i' will stay at "size(ReList,2)-1". 
+        i = 1; % Without this,'i' will stay at "size(ReList,2)-1". 
               % And wingPolar{i} value needed for code right below, will not be correct.
     end
     if Re_d >= ReList(size(ReList,2))
@@ -261,7 +261,7 @@ while (rel_delta_m>0.001 && abs_delta_m>0.01 && iter<max_iter)
     c_m_d_min=c_m_d_min_L+r*(c_m_d_min_U-c_m_d_min_L);
 
     % v_m
-    Re_m=rho*v_m*c/mu;
+    Re_m=min([rho*c*v_m/mu,ReList(length(ReList))]);
     ReU=0;
     ReL=0;
     for i=1:size(ReList,2)-1
@@ -274,7 +274,7 @@ while (rel_delta_m>0.001 && abs_delta_m>0.01 && iter<max_iter)
     if Re_m <= ReList(1)
         ReU=ReList(2);
         ReL=ReList(1);
-        i = 1 % Without this,'i' will stay at "size(ReList,2)-1". 
+        i = 1; % Without this,'i' will stay at "size(ReList,2)-1". 
               % And wingPolar{i} value needed for code right below, will not be correct.
     end
     if Re_m >= ReList(size(ReList,2))
@@ -335,7 +335,7 @@ while (rel_delta_m>0.001 && abs_delta_m>0.01 && iter<max_iter)
         wingPolarm20(4)*ones(1,size(y,2)-floor(size(y,2)/2))]';
 
     %% inertia tensor recalculation
-    Ixx=sum(Y.*Y*(m_distr/b*delta+wing_m_distr));
+    Ixx=y.*y*(m_distr/b*delta+wing_m_distr);
     for k=1:floor(n/2)
         Ixx=Ixx+2*y(k*round(N/(n+1)))*y(k*round(N/(n+1)))*(m_propulsion/n); % Each unit's weight is Total divided by 'n'
     end
@@ -584,9 +584,9 @@ while (rel_delta_m>0.001 && abs_delta_m>0.01 && iter<max_iter)
     Fz=tailPolarp30(2)*b_hor*c_hor*0.5*rho*v_m^2;
     theta_dd=Fz*L/Iyy;
     n_hor=1-theta_dd*L/g;
-    Mbx_hor=1/2/2*b_hor*hor_m*n_hor*g-1/2/2*tailPolarp30(2)*b_hor*c_hor*0.5*rho*v_m^2;
-    Q_hor=hor_m*n_hor*g-tailPolarp30(2)*b_hor*c_hor*0.5*rho*v_m^2/2;
-    T_hor=b_hor/2*tailPolarp30(4)*b_hor*c_hor*c_hor*0.5*rho*v_m^2/2+0.1*c_hor*tailPolarp30(2)*b_hor*c_hor*0.5*rho*v_m^2/2;
+    Mbx_hor=1/2*(b_hor/2)*hor_m*n_hor*g-1/2*(b_hor/2)*tailPolarp30(2)*b_hor*c_hor*0.5*rho*v_m^2;
+    Q_hor=(hor_m/2)*n_hor*g-tailPolarp30(2)*b_hor*c_hor*0.5*rho*v_m^2/2;
+    T_hor= tailPolarp30(4)*b_hor*c_hor*c_hor*0.5*rho*v_m^2/2+0.1*c_hor*tailPolarp30(2)*b_hor*c_hor*0.5*rho*v_m^2/2;
     % flanges against stress
     t_f_hor_s = abs(Mbx_hor)/(2*h_prof_hor*h_prof_hor)/zul_c(2,1)*1.5;
     % flanges against buckling (refer to Hertel)
@@ -695,9 +695,9 @@ while (rel_delta_m>0.001 && abs_delta_m>0.01 && iter<max_iter)
     Fy=tailPolarp30(2)*b_fin*c_fin*0.5*rho*v_m^2;
     psi_dd=Fy*L/Izz;
     n_fin=psi_dd*L/g;
-    Mbx_fin=-1/2*b_fin*fin_m*n_fin*g+1/2*tailPolarp30(2)*b_fin*c_fin*0.5*rho*v_m^2;
+    Mbx_fin=-(b_fin/4)*(fin_m/2)*n_fin*g + (b_fin/4)*(0.5)*tailPolarp30(2)*b_fin*c_fin*0.5*rho*v_m^2;
     Q_fin=-fin_m*n_fin*g+tailPolarp30(2)*b_fin*c_fin*0.5*rho*v_m^2;
-    T_fin=b_fin*tailPolarp30(4)*b_fin*c_fin*c_fin*0.5*rho*v_m^2+0.1*c_fin*tailPolarp30(2)*b_fin*c_fin*0.5*rho*v_m^2;
+    T_fin=tailPolarp30(4)*b_fin*c_fin*c_fin*0.5*rho*v_m^2 + 0.1*c_fin*tailPolarp30(2)*b_fin*c_fin*0.5*rho*v_m^2;
     % flanges against stress
     t_f_fin_s = abs(Mbx_fin)/(2*h_prof_fin*h_prof_fin)/zul_c(2,1)*1.5;
     % flanges against buckling (refer to Hertel)
@@ -836,7 +836,7 @@ while (rel_delta_m>0.001 && abs_delta_m>0.01 && iter<max_iter)
 
     t_fus_b=sqrt(1.5*s_t/(0.3*Q_lam_c(1,1,1))*(D/2));
     
-    t_fus=max([t_cfrp_min,t_fus_b,t_fus_d]);
+    t_fus=max([t_cfrp_min,t_fus_b,t_fus_d,t_fus_s]);
     
     %% recalculate mass distribution
     damping=0.4;
@@ -876,6 +876,7 @@ while (rel_delta_m>0.001 && abs_delta_m>0.01 && iter<max_iter)
         m_struct=(m_struct+m_struct_new)/2;
         break;
     end
+    rd_last = rd;
     m_tot=(m_tot_new);
     %disp(m_struct);
     m_struct=(m_struct_new);
