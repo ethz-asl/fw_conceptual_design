@@ -180,3 +180,7 @@ display(str);
 
 Plot_AirplaneDesign_Standard(PerfResults, DesignResults, environment, plane, params, flightdata, vars);
 %Plot_AirplaneDesign_ASFinalPaper_PlotOrderChanged(PerfResults, DesignResults, environment, plane, params, flightdata, vars);
+
+if(numel(vars(1).values)*numel(vars(2).values)*numel(vars(3).values)==1)
+    Plot_BasicSimulationTimePlot(flightdata,environment,params, plane)
+end

@@ -116,7 +116,7 @@ for i = 1:numel(vars(3).values)
             %Execute simulation
             [results(i,k,j), flightdata(i,k,j)] = performanceEvaluator(params ,plane, environment, settings);
             
-            if(fabs(environment.plot_solar_timeshift) > 0.01)
+            if(abs(environment.plot_solar_timeshift) > 0.01)
                 results(i,k,j).t_eq2 = results(i,k,j).t_eq2 + environment.plot_solar_timeshift * 3600;
                 results(i,k,j).t_fullcharge = results(i,k,j).t_fullcharge + environment.plot_solar_timeshift * 3600;
                 results(i,k,j).t_sunrise = results(i,k,j).t_sunrise + environment.plot_solar_timeshift * 3600;
@@ -149,3 +149,7 @@ display(str);
 
 Plot_AirplaneAnalysis_Standard(results, vars);
 %Plot_AirplaneAnalysis_ASFinalPaper_PlotOrderChanged(results, [], environment, plane, params, flightdata, vars,1);
+
+if(numel(vars(1).values)*numel(vars(2).values)*numel(vars(3).values)==1)
+    Plot_BasicSimulationTimePlot(flightdata,environment,params, plane)
+end
